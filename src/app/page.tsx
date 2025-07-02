@@ -7,6 +7,7 @@ import Pricing from '@/components/landing/pricing';
 import Faq from '@/components/landing/faq';
 import Contact from '@/components/landing/contact';
 import Footer from '@/components/landing/footer';
+import CompanyProfile from '@/components/landing/company-profile';
 
 export default function Home() {
   return (
@@ -20,6 +21,7 @@ export default function Home() {
         <Pricing />
         <Faq />
         <Contact />
+        <CompanyProfile />
       </main>
       <Footer />
     </div>
