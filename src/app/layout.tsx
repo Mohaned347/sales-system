@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'مركزي للمبيعات | منصة المبيعات المتكاملة',
-  description: 'بسّط عملياتك، وعزز مبيعاتك مع مركزي للمبيعات.',
+  title: 'مبيعاتي | منصتك لإدارة المبيعات بسهولة',
+  description: 'مبيعاتي يساعدك على تبسيط عملياتك وتعزيز مبيعاتك.',
 };
 
 export default function RootLayout({

@@ -38,7 +38,7 @@ export default function About() {
             كل ما تحتاجه للنجاح في مكان واحد
           </h2>
           <p className="text-lg text-muted-foreground mt-4 max-w-3xl mx-auto">
-            صُمم مركزي للمبيعات لتبسيط سير عملك، وتزويدك بالأدوات اللازمة لتسريع نمو أعمالك، وتعزيز أرباحك.
+            صُمم "مبيعاتي" لتبسيط سير عملك، وتزويدك بالأدوات اللازمة لتسريع نمو أعمالك، وتعزيز أرباحك.
           </p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">

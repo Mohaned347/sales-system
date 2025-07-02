@@ -57,7 +57,7 @@ export default function DashboardPage() {
       </div>
       <Card>
         <CardHeader>
-            <CardTitle>مرحباً بك في لوحة تحكم "مركزي للمبيعات"</CardTitle>
+            <CardTitle>مرحباً بك في لوحة تحكم "مبيعاتي"</CardTitle>
             <CardDescription>هذه هي واجهتك لإدارة كل ما يتعلق بنشاطك التجاري.</CardDescription>
         </CardHeader>
         <CardContent>

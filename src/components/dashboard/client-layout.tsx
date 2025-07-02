@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Package, DollarSign, Home, Menu, ShoppingCart } from 'lucide-react'
+import { Package, DollarSign, Home, Menu } from 'lucide-react'
+import { LogoIcon } from '@/components/icons/logo';
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
@@ -55,8 +56,8 @@ export function DashboardClientLayout({
                 <div className="flex h-full max-h-screen flex-col gap-2">
                     <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
                         <Link href="/" className="flex items-center gap-2 font-semibold">
-                            <ShoppingCart className="h-6 w-6 text-primary" />
-                            <span className="">مركزي للمبيعات</span>
+                            <LogoIcon className="h-6 w-6 text-primary" />
+                            <span className="">مبيعاتي</span>
                         </Link>
                     </div>
                     <div className="flex-1">
@@ -80,8 +81,8 @@ export function DashboardClientLayout({
                         <SheetContent side="right" className="flex flex-col">
                             <div className="flex h-14 items-center border-b px-4">
                                 <Link href="/" className="flex items-center gap-2 font-semibold">
-                                    <ShoppingCart className="h-6 w-6 text-primary" />
-                                    <span className="">مركزي للمبيعات</span>
+                                    <LogoIcon className="h-6 w-6 text-primary" />
+                                    <span className="">مبيعاتي</span>
                                 </Link>
                             </div>
                             {navLinks}

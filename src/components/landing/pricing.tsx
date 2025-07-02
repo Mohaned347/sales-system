@@ -23,7 +23,7 @@ export default function Pricing() {
             استثمار واحد لنمو لا محدود
           </h2>
           <p className="text-lg text-muted-foreground mt-4 max-w-3xl mx-auto">
-            نؤمن بالبساطة والشفافية. احصل على جميع ميزات "مركزي للمبيعات" القوية بسعر ثابت وواضح، بدون أي تعقيدات أو تكاليف إضافية.
+            نؤمن بالبساطة والشفافية. احصل على جميع ميزات "مبيعاتي" القوية بسعر ثابت وواضح، بدون أي تعقيدات أو تكاليف إضافية.
           </p>
         </div>
         <div className="flex justify-center">
@@ -32,7 +32,7 @@ export default function Pricing() {
                   <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
                     <Rocket className="w-12 h-12 text-primary" />
                   </div>
-                <CardTitle className="font-headline text-3xl">باقة مركزي الشاملة</CardTitle>
+                <CardTitle className="font-headline text-3xl">باقة مبيعاتي الشاملة</CardTitle>
                 <CardDescription className="text-base mt-2">
                     كل ما تحتاجه لإدارة أعمالك بكفاءة وفعالية، في باقة واحدة متكاملة.
                 </CardDescription>

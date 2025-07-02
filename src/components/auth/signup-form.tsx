@@ -53,7 +53,7 @@ export function SignUpForm() {
       setIsLoading(false)
       toast({
         title: "تم إنشاء الحساب بنجاح!",
-        description: "أهلاً بك في مركزي للمبيعات. جاري توجيهك الآن...",
+        description: "أهلاً بك في مبيعاتي. جاري توجيهك الآن...",
       })
       router.push('/dashboard')
     }, 1500)

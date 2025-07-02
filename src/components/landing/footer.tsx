@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ShoppingCart } from 'lucide-react';
+import { LogoIcon } from '@/components/icons/logo';
 
 export default function Footer() {
   return (
@@ -7,13 +7,13 @@ export default function Footer() {
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
-            <ShoppingCart className="w-7 h-7 text-primary" />
+            <LogoIcon className="w-7 h-7 text-primary" />
             <span className="text-xl font-bold font-headline text-foreground">
-              مركزي للمبيعات
+              مبيعاتي
             </span>
           </div>
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} مركزي للمبيعات. جميع الحقوق محفوظة.
+            &copy; {new Date().getFullYear()} مبيعاتي. جميع الحقوق محفوظة.
           </p>
           <div className="flex gap-4">
             <Link href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
