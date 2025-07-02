@@ -184,7 +184,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <AppContext.Provider value={{ products, sales, loading, addProduct, updateProduct, deleteProduct, getProductById, addSale, updateSale, deleteSale, returnProduct, refreshData }}>
       {children}
-    </AppAppContext.Provider>
+    </AppContext.Provider>
   );
 };
 

@@ -1,56 +1,17 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Rocket } from 'lucide-react';
 
-const plans = [
-  {
-    name: 'المبتدئة',
-    price: '$29',
-    period: 'شهرياً',
-    description: 'مثالية للفرق الصغيرة والشركات الناشئة.',
-    features: [
-      'تتبع المبيعات',
-      'إدارة المخزون (حتى 100 منتج)',
-      'تقارير أساسية',
-      'دعم عبر البريد الإلكتروني',
-    ],
-    cta: 'ابدأ التجربة المجانية',
-    popular: false,
-    link: '/signup'
-  },
-  {
-    name: 'الاحترافية',
-    price: '$79',
-    period: 'شهرياً',
-    description: 'للشركات النامية التي تحتاج إلى قوة ودعم أكبر.',
-    features: [
-      'كل شيء في الخطة المبتدئة',
-      'تقارير متقدمة وتفصيلية',
-      'إدارة مخزون غير محدودة',
-      'وصول لواجهة برمجة التطبيقات (API)',
-      'دعم فني ذو أولوية',
-    ],
-    cta: 'ابدأ التجربة المجانية',
-    popular: true,
-    link: '/signup'
-  },
-  {
-    name: 'المؤسسات',
-    price: 'مخصص',
-    period: '',
-    description: 'للشركات الكبيرة ذات الاحتياجات المخصصة.',
-    features: [
-      'كل شيء في الخطة الاحترافية',
-      'مدير حساب مخصص',
-      'تكاملات مخصصة',
-      'خيار التثبيت المحلي',
-      'دعم على مدار 24/7',
-    ],
-    cta: 'تواصل مع المبيعات',
-    popular: false,
-    link: '#contact'
-  },
+const features = [
+  'إدارة شاملة للمبيعات والفواتير',
+  'نظام متكامل لتتبع المخزون والمنتجات',
+  'لوحة تحكم وتقارير تحليلية ذكية',
+  'إدارة علاقات العملاء (CRM) مبسطة',
+  'دعم فني متكامل عبر البريد الإلكتروني والهاتف',
+  'تحديثات مستمرة وميزات جديدة بانتظام',
+  'عدد غير محدود من المستخدمين والمنتجات',
+  'لا توجد أي رسوم خفية أو اشتراكات شهرية',
 ];
 
 export default function Pricing() {
@@ -59,45 +20,44 @@ export default function Pricing() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold font-headline text-foreground">
-            اختر الخطة التي تناسبك
+            استثمار واحد لنمو لا محدود
           </h2>
-          <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">
-            ابدأ مجانًا، ثم اختر الخطة التي تناسب احتياجات عملك. لا توجد رسوم خفية، ويمكنك الإلغاء في أي وقت.
+          <p className="text-lg text-muted-foreground mt-4 max-w-3xl mx-auto">
+            نؤمن بالبساطة والشفافية. احصل على جميع ميزات "مركزي للمبيعات" القوية بسعر ثابت وواضح، بدون أي تعقيدات أو تكاليف إضافية.
           </p>
         </div>
-        <div className="grid lg:grid-cols-3 gap-8 items-stretch">
-          {plans.map((plan) => (
-            <Card key={plan.name} className={`flex flex-col h-full shadow-lg transition-all duration-300 hover:scale-105 ${plan.popular ? 'border-primary ring-2 ring-primary' : ''}`}>
-              <CardHeader className="relative pb-4">
-                {plan.popular && (
-                  <div className="absolute top-0 -translate-y-1/2 bg-accent text-accent-foreground px-3 py-1 text-sm font-semibold rounded-full shadow-md">
-                    الأكثر شيوعًا
+        <div className="flex justify-center">
+            <Card className="w-full max-w-2xl shadow-2xl border-primary ring-2 ring-primary/50 flex flex-col">
+              <CardHeader className="text-center bg-card p-8 rounded-t-lg">
+                  <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
+                    <Rocket className="w-12 h-12 text-primary" />
                   </div>
-                )}
-                <CardTitle className="font-headline pt-4">{plan.name}</CardTitle>
-                <div className="flex items-baseline gap-2 pt-2">
-                  <span className="text-4xl font-bold">{plan.price}</span>
-                  <span className="text-muted-foreground">{plan.period}</span>
+                <CardTitle className="font-headline text-3xl">باقة مركزي الشاملة</CardTitle>
+                <CardDescription className="text-base mt-2">
+                    كل ما تحتاجه لإدارة أعمالك بكفاءة وفعالية، في باقة واحدة متكاملة.
+                </CardDescription>
+                 <div className="flex items-baseline justify-center gap-2 pt-6">
+                  <span className="text-5xl font-bold text-foreground">200,000</span>
+                  <span className="text-xl font-medium text-muted-foreground">ج.س</span>
                 </div>
-                <CardDescription>{plan.description}</CardDescription>
+                 <p className="text-sm text-muted-foreground mt-1">دفعة واحدة / ترخيص مدى الحياة</p>
               </CardHeader>
-              <CardContent className="flex-grow">
-                <ul className="space-y-3">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-500 mt-1 shrink-0" />
-                      <span>{feature}</span>
+              <CardContent className="p-8">
+                <ul className="space-y-4">
+                  {features.map((feature) => (
+                    <li key={feature} className="flex items-center gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
+                      <span className="text-base">{feature}</span>
                     </li>
                   ))}
                 </ul>
               </CardContent>
-              <CardFooter>
-                <Button asChild className="w-full" variant={plan.popular ? 'default' : 'outline'}>
-                  <Link href={plan.link}>{plan.cta}</Link>
+              <CardFooter className="p-8 pt-0 mt-4">
+                <Button asChild className="w-full text-lg py-6" size="lg">
+                  <Link href={'/signup'}>اشترك الآن وابدأ رحلة النجاح</Link>
                 </Button>
               </CardFooter>
             </Card>
-          ))}
         </div>
       </div>
     </section>
