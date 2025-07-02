@@ -35,17 +35,17 @@ export default function CompanyProfile() {
             <div className="md:col-span-1 flex items-center justify-center p-8 bg-primary/5">
                <Image
                 src="https://placehold.co/200x200.png"
-                alt="شعار الشركة المصنعة"
+                alt="شعار شركة مونتي قو اس دي ان"
                 width={150}
                 height={150}
                 className="rounded-full shadow-md object-cover ring-4 ring-primary/20"
-                data-ai-hint="company logo"
+                data-ai-hint="company logo montygo"
               />
             </div>
             <div className="md:col-span-2 p-8 flex flex-col justify-center">
-              <h3 className="text-2xl font-bold text-primary mb-2">شركة الحلول المبتكرة</h3>
+              <h3 className="text-2xl font-bold text-primary mb-2">مونتي قو اس دي ان</h3>
               <p className="text-muted-foreground mb-6">
-                نحن شركة تقنية رائدة متخصصة في تطوير حلول برمجية مبتكرة للشركات الصغيرة والمتوسطة. نؤمن بأن التكنولوجيا هي مفتاح النمو والنجاح، ونسعى لتوفير أدوات قوية وسهلة الاستخدام تساعد عملائنا على تحقيق أهدافهم وتجاوز توقعاتهم. يجمع فريقنا بين الخبرة التقنية العميقة والشغف لمساعدة الآخرين على النجاح.
+                مونتي قو اس دي ان هي شركة تكنولوجية متخصصة في صناعة السوفتوير والأنظمة، كما أنها متخصصة في التجارة والأعمال الأخرى.
               </p>
               <div className="flex items-center gap-4 mt-auto pt-4 border-t">
                 <p className="font-semibold text-foreground">تواصل معنا:</p>
