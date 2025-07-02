@@ -12,6 +12,7 @@ import Contact from '@/components/landing/contact';
 import Footer from '@/components/landing/footer';
 import CompanyProfile from '@/components/landing/company-profile';
 import { AppProvider } from '@/context/app-context';
+import ScrollToTop from '@/components/landing/scroll-to-top';
 
 export default function Home() {
   return (
@@ -30,6 +31,7 @@ export default function Home() {
           <CompanyProfile />
         </main>
         <Footer />
+        <ScrollToTop />
       </div>
     </AppProvider>
   );

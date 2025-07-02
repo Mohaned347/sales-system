@@ -77,10 +77,10 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} مبيعاتي. جميع الحقوق محفوظة.
           </p>
           <div className="flex gap-4">
-            <Link href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link href="/terms-of-service" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               شروط الخدمة
             </Link>
-            <Link href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link href="/privacy-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               سياسة الخصوصية
             </Link>
           </div>
