@@ -30,6 +30,15 @@ const saveToStorage = <T,>(key: string, value: T) => {
 
 const generateId = () => `id_${new Date().getTime()}_${Math.random().toString(36).substr(2, 9)}`;
 
+const generateInvoiceNumber = () => {
+    const now = new Date();
+    const year = now.getFullYear().toString().slice(-2);
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
+    return `INV-${year}${month}${day}-${randomNum}`;
+};
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
@@ -81,7 +90,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const getProductById = (id: string) => products.find(p => p.id === id);
 
   const addSale = async (saleData: Omit<Sale, 'id'>) => {
-    const newSale: Sale = { id: generateId(), ...saleData };
+    const newSale: Sale = { 
+      ...saleData, 
+      id: generateId(), 
+      invoiceNumber: saleData.invoiceNumber || generateInvoiceNumber(),
+    };
     
     // Decrease stock for each item in the sale
     let stockSufficient = true;

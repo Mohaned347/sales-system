@@ -25,8 +25,8 @@ const saleItemSchema = z.object({
 });
 
 const saleFormSchema = z.object({
-  invoiceNumber: z.string(),
-  date: z.string(),
+  invoiceNumber: z.string().optional(),
+  date: z.string().min(1, 'التاريخ مطلوب'),
   items: z.array(saleItemSchema).min(1, 'يجب إضافة منتج واحد على الأقل'),
   discount: z.coerce.number().min(0).default(0),
   discountType: z.enum(['fixed', 'percentage']).default('fixed'),
@@ -37,15 +37,6 @@ const saleFormSchema = z.object({
 
 type SaleFormValues = z.infer<typeof saleFormSchema>;
 
-function generateInvoiceNumber() {
-    const now = new Date();
-    const year = now.getFullYear().toString().slice(-2);
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const day = now.getDate().toString().padStart(2, '0');
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
-    return `INV-${year}${month}${day}-${randomNum}`;
-}
-
 interface SaleModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -54,7 +45,7 @@ interface SaleModalProps {
 }
 
 export default function SaleModal({ isOpen, onClose, onSubmit, sale }: SaleModalProps) {
-    const { products, addSale, updateSale } = useAppContext();
+    const { products } = useAppContext();
     const { toast } = useToast();
     
     const [searchTerm, setSearchTerm] = useState('');
@@ -68,7 +59,8 @@ export default function SaleModal({ isOpen, onClose, onSubmit, sale }: SaleModal
             discountType: 'fixed',
             discount: 0,
             tax: 0,
-            paymentMethod: 'cash'
+            paymentMethod: 'cash',
+            date: '', // Initialize date as empty to avoid hydration mismatch
         }
     });
 
@@ -102,8 +94,9 @@ export default function SaleModal({ isOpen, onClose, onSubmit, sale }: SaleModal
                     date: new Date(sale.date).toISOString().split('T')[0],
                 });
             } else {
+                // Set default date only on client-side when modal opens for a new sale
                 reset({
-                    invoiceNumber: generateInvoiceNumber(),
+                    invoiceNumber: undefined,
                     date: new Date().toISOString().split('T')[0],
                     items: [],
                     discount: 0,
@@ -241,7 +234,7 @@ export default function SaleModal({ isOpen, onClose, onSubmit, sale }: SaleModal
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1">
                                 <Label htmlFor="invoiceNumber">رقم الفاتورة</Label>
-                                <Input id="invoiceNumber" {...register('invoiceNumber')} readOnly />
+                                <Input id="invoiceNumber" value={sale ? sale.invoiceNumber : 'سيتم إنشاؤه تلقائياً'} readOnly />
                             </div>
                             <div className="space-y-1">
                                 <Label htmlFor="date">التاريخ</Label>
