@@ -62,9 +62,19 @@ export default function Products() {
 
   return (
     <div className="p-4 md:p-6">
-      <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              <Button onClick={refreshData} variant="outline">
+      <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+          <div className="relative w-full sm:max-w-xs">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                  type="text"
+                  placeholder="ابحث بالاسم، التصنيف أو الباركود..."
+                  className="w-full pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+              />
+          </div>
+          <div className="flex gap-2 w-full sm:w-auto">
+              <Button onClick={refreshData} variant="outline" className="flex-1 sm:flex-auto">
                   <RefreshCw className="ml-2 h-4 w-4" /> تحديث
               </Button>
               <Button
@@ -72,25 +82,13 @@ export default function Products() {
                       setCurrentProduct(null);
                       setIsModalOpen(true);
                   }}
+                  className="flex-1 sm:flex-auto"
               >
                   <Plus className="ml-2 h-4 w-4" /> إضافة منتج
               </Button>
           </div>
       </div>
       
-      <div className="mb-6">
-          <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                  type="text"
-                  placeholder="ابحث عن منتج بالاسم، التصنيف أو الباركود..."
-                  className="w-full max-w-sm pl-10"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-              />
-          </div>
-      </div>
-
       <div className="rounded-md border">
           <Table>
               <TableHeader>

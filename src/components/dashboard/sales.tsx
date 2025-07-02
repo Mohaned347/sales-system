@@ -89,28 +89,27 @@ export default function Sales() {
 
   return (
     <div className="p-4 md:p-6">
-      <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              <Button onClick={refreshData} variant="outline"><RefreshCw className="ml-2 h-4 w-4" /> تحديث</Button>
-              <Button onClick={() => setShowDeletedProducts(!showDeletedProducts)} variant={showDeletedProducts ? 'default' : 'secondary'}>
-                  <Archive className="ml-2 h-4 w-4" /> {showDeletedProducts ? 'إخفاء المؤرشف' : 'إظهار المؤرشف'}
-              </Button>
-              <Button onClick={() => { setCurrentSale(null); setIsSaleModalOpen(true); }}>
-                  <Plus className="ml-2 h-4 w-4" /> بيع جديد
-              </Button>
-          </div>
-      </div>
-      
-      <div className="mb-6">
-          <div className="relative">
+      <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+          <div className="relative w-full sm:max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                   type="text"
                   placeholder="ابحث برقم الفاتورة أو اسم المنتج..."
-                  className="w-full max-w-sm pl-10"
+                  className="w-full pl-10"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
               />
+          </div>
+          <div className="grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto">
+              <Button onClick={refreshData} variant="outline" className="sm:flex-grow-0">
+                  <RefreshCw className="ml-2 h-4 w-4" /> تحديث
+              </Button>
+              <Button onClick={() => setShowDeletedProducts(!showDeletedProducts)} variant={showDeletedProducts ? 'default' : 'secondary'} className="sm:flex-grow-0">
+                  <Archive className="ml-2 h-4 w-4" /> {showDeletedProducts ? 'إخفاء المؤرشف' : 'إظهار المؤرشف'}
+              </Button>
+              <Button onClick={() => { setCurrentSale(null); setIsSaleModalOpen(true); }} className="col-span-2 sm:col-auto">
+                  <Plus className="ml-2 h-4 w-4" /> بيع جديد
+              </Button>
           </div>
       </div>
 

@@ -18,10 +18,10 @@ export default function Demo() {
             هذا ليس مجرد عرض، بل هي نسخة تفاعلية بالكامل من النظام. يمكنك إضافة منتجات وتسجيل مبيعات ورؤية التغييرات فوراً. كل البيانات تحفظ مؤقتاً في متصفحك.
           </p>
         </div>
-        <Card className="shadow-2xl">
+        <Card className="shadow-2xl overflow-hidden">
           <Tabs defaultValue="products" className="w-full">
             <div className="p-4 border-b">
-              <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2">
+              <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="products">إدارة المنتجات</TabsTrigger>
                 <TabsTrigger value="sales">إدارة المبيعات</TabsTrigger>
               </TabsList>
