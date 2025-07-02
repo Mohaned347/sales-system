@@ -46,9 +46,9 @@ export function LoginForm() {
       setIsLoading(false)
       toast({
         title: "تم تسجيل الدخول بنجاح",
-        description: "جاري توجيهك إلى واجهة التجربة...",
+        description: "جاري توجيهك إلى لوحة التحكم...",
       })
-      router.push('/#demo')
+      router.push('/dashboard')
     }, 1500)
   }
 

@@ -27,9 +27,9 @@ export default function Pricing() {
           </p>
         </div>
         <div className="flex justify-center">
-            <Card className="w-full max-w-2xl shadow-2xl shadow-primary/20 border-primary ring-2 ring-primary/50 flex flex-col transition-all duration-300 hover:-translate-y-2">
-              <CardHeader className="text-center bg-card p-8 rounded-t-lg">
-                  <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
+            <Card className="w-full max-w-2xl shadow-2xl shadow-primary/20 border-primary ring-2 ring-primary/50 flex flex-col transition-all duration-300 hover:-translate-y-2 bg-gradient-to-br from-card to-secondary/30">
+              <CardHeader className="text-center p-8 rounded-t-lg">
+                  <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 border-4 border-primary/20">
                     <Rocket className="w-12 h-12 text-primary" />
                   </div>
                 <CardTitle className="font-headline text-3xl">باقة مبيعاتي الشاملة</CardTitle>
@@ -52,8 +52,8 @@ export default function Pricing() {
                   ))}
                 </ul>
               </CardContent>
-              <CardFooter className="p-8 pt-0 mt-4">
-                <Button asChild className="w-full text-lg py-6" size="lg">
+              <CardFooter className="p-8 pt-0 mt-auto">
+                <Button asChild className="w-full text-lg py-6 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-shadow">
                   <Link href={'/signup'}>اشترك الآن وابدأ رحلة النجاح</Link>
                 </Button>
               </CardFooter>

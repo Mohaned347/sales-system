@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Package, CreditCard, Users, Zap } from 'lucide-react';
+import { BarChart, Package, CreditCard, Users, Zap, ShieldCheck } from 'lucide-react';
 
 const featuresList = [
   {
@@ -26,6 +26,11 @@ const featuresList = [
     icon: <Zap className="w-10 h-10 text-primary" />,
     title: 'أتمتة المهام الروتينية',
     description: 'وفّر وقتك وجهدك عبر أتمتة المهام المتكررة، وركز على ما يهم حقًا: إتمام الصفقات.',
+  },
+  {
+    icon: <ShieldCheck className="w-10 h-10 text-primary" />,
+    title: 'آمن وموثوق',
+    description: 'نظام محمي بالكامل يعمل على أجهزتك الخاصة بدون الحاجة للإنترنت، مما يضمن أمان بياناتك واستمرارية عملك.',
   },
 ];
 
