@@ -126,10 +126,6 @@ export default function Products() {
                                       product.stock > 10 ? 'default' :
                                       product.stock > 0 ? 'secondary' :
                                       'destructive'
-                                  } className={
-                                      product.stock > 10 ? 'bg-green-500/20 text-green-700' :
-                                      product.stock > 0 ? 'bg-yellow-500/20 text-yellow-700' :
-                                      ''
                                   }>
                                       {product.stock}
                                   </Badge>

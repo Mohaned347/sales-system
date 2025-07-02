@@ -31,7 +31,7 @@ export default function Testimonials() {
     <section id="testimonials" className="py-20 md:py-28 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold font-headline text-foreground">
+          <h2 className="text-3xl md:text-4xl font-extrabold font-headline text-foreground">
             ماذا يقول عملاؤنا السعداء
           </h2>
           <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">
@@ -40,7 +40,7 @@ export default function Testimonials() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
-            <Card key={index} className="flex flex-col justify-between shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <Card key={index} className="flex flex-col justify-between shadow-lg hover:shadow-xl hover:shadow-primary/10 transition-all duration-300">
               <CardHeader>
                 <div className="flex items-center gap-4">
                   <Avatar>

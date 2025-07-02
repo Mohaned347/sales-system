@@ -19,7 +19,7 @@ export default function Pricing() {
     <section id="pricing" className="py-20 md:py-28 bg-secondary/50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold font-headline text-foreground">
+          <h2 className="text-3xl md:text-4xl font-extrabold font-headline text-foreground">
             استثمار واحد لنمو لا محدود
           </h2>
           <p className="text-lg text-muted-foreground mt-4 max-w-3xl mx-auto">
@@ -27,7 +27,7 @@ export default function Pricing() {
           </p>
         </div>
         <div className="flex justify-center">
-            <Card className="w-full max-w-2xl shadow-2xl border-primary ring-2 ring-primary/50 flex flex-col transition-all duration-300 hover:-translate-y-2">
+            <Card className="w-full max-w-2xl shadow-2xl shadow-primary/20 border-primary ring-2 ring-primary/50 flex flex-col transition-all duration-300 hover:-translate-y-2">
               <CardHeader className="text-center bg-card p-8 rounded-t-lg">
                   <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
                     <Rocket className="w-12 h-12 text-primary" />
