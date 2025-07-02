@@ -20,7 +20,7 @@ export default function Header() {
       <div className="container mx-auto flex justify-between items-center">
         <Link href="/" className="flex items-center gap-3">
           <Image src="https://placehold.co/40x40.png" alt="مبيعاتي Logo" width={40} height={40} className="rounded-md" data-ai-hint="logo" />
-          <span className="text-2xl font-bold font-headline text-foreground">مبيعاتي</span>
+          <span className="text-2xl font-bold  font-headline text-foreground">مبيعاتي</span>
         </Link>
         
         {/* Desktop Navigation */}

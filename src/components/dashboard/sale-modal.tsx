@@ -159,7 +159,7 @@ export default function SaleModal({ isOpen, onClose, onSubmit, sale }: SaleModal
                 <DialogHeader>
                     <DialogTitle>{sale ? 'تعديل فاتورة' : 'فاتورة بيع جديدة'}</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit(handleFormSubmit)} className="flex-1 flex flex-col overflow-hidden">
+                <form onSubmit={handleSubmit(handleFormSubmit)} className="flex-1 flex flex-col overflow-hidden min-h-0">
                     <ScrollArea className="flex-1 -m-6 p-6">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             {/* Left side: Item selection and list */}
