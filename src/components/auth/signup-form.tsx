@@ -1,3 +1,4 @@
+
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -50,7 +51,7 @@ export function SignUpForm() {
         title: "تم إنشاء الحساب بنجاح!",
         description: "أهلاً بك في مركزي للمبيعات. جاري توجيهك الآن...",
       })
-      router.push('/dashboard')
+      router.push('/#demo')
     }, 1500)
   }
 

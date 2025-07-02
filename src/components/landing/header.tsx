@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart } from 'lucide-react';
@@ -13,10 +14,7 @@ export default function Header() {
           </h1>
         </Link>
         <nav className="hidden md:flex items-center gap-2">
-           <Button variant="outline" asChild>
-            <Link href="/dashboard">لوحة التحكم</Link>
-          </Button>
-          <Button variant="ghost" asChild>
+           <Button variant="ghost" asChild>
             <Link href="/login">تسجيل الدخول</Link>
           </Button>
           <Button asChild>

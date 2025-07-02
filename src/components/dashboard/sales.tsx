@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from 'react';
@@ -9,7 +10,6 @@ import SaleDetailsModal from './sale-details-modal';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from '../ui/skeleton';
@@ -88,97 +88,90 @@ export default function Sales() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-                <CardTitle>إدارة المبيعات</CardTitle>
-                <CardDescription>عرض وتعديل جميع عمليات البيع المسجلة.</CardDescription>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                <Button onClick={refreshData} variant="outline"><RefreshCw className="ml-2 h-4 w-4" /> تحديث</Button>
-                <Button onClick={() => setShowDeletedProducts(!showDeletedProducts)} variant={showDeletedProducts ? 'default' : 'secondary'}>
-                    <Archive className="ml-2 h-4 w-4" /> {showDeletedProducts ? 'إخفاء المؤرشف' : 'إظهار المؤرشف'}
-                </Button>
-                <Button onClick={() => { setCurrentSale(null); setIsSaleModalOpen(true); }}>
-                    <Plus className="ml-2 h-4 w-4" /> بيع جديد
-                </Button>
-            </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="mb-6">
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                    type="text"
-                    placeholder="ابحث برقم الفاتورة أو اسم المنتج..."
-                    className="w-full max-w-sm pl-10"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
-        </div>
+    <div className="p-4 md:p-6">
+      <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <Button onClick={refreshData} variant="outline"><RefreshCw className="ml-2 h-4 w-4" /> تحديث</Button>
+              <Button onClick={() => setShowDeletedProducts(!showDeletedProducts)} variant={showDeletedProducts ? 'default' : 'secondary'}>
+                  <Archive className="ml-2 h-4 w-4" /> {showDeletedProducts ? 'إخفاء المؤرشف' : 'إظهار المؤرشف'}
+              </Button>
+              <Button onClick={() => { setCurrentSale(null); setIsSaleModalOpen(true); }}>
+                  <Plus className="ml-2 h-4 w-4" /> بيع جديد
+              </Button>
+          </div>
+      </div>
+      
+      <div className="mb-6">
+          <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                  type="text"
+                  placeholder="ابحث برقم الفاتورة أو اسم المنتج..."
+                  className="w-full max-w-sm pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+              />
+          </div>
+      </div>
 
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>الفاتورة</TableHead>
-                <TableHead>المنتجات</TableHead>
-                <TableHead>الإجمالي</TableHead>
-                <TableHead>الدفع</TableHead>
-                <TableHead>التاريخ</TableHead>
-                <TableHead className="text-left">الإجراءات</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-48" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-28" /></TableCell>
-                  </TableRow>
-                ))
-              ) : filteredSales.length > 0 ? (
-                filteredSales.map((sale) => (
-                  <TableRow key={sale.id} className={sale.items.some(item => !getProductById(item.productId)) ? 'bg-muted/50' : ''}>
-                    <TableCell className="font-mono text-xs">#{sale.invoiceNumber}</TableCell>
-                    <TableCell className="max-w-xs truncate" title={getProductNames(sale)}>
-                      {getProductNames(sale)}
-                    </TableCell>
-                    <TableCell className="font-medium">{formatCurrency(sale.total)}</TableCell>
-                    <TableCell><Badge variant="secondary">{sale.paymentMethod === 'cash' ? 'نقدي' : 'آجل'}</Badge></TableCell>
-                    <TableCell>{formatDate(sale.date)}</TableCell>
-                    <TableCell className="text-left">
-                      <div className="flex justify-start gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => handleViewDetails(sale)} title="عرض التفاصيل"><Eye className="h-4 w-4" /></Button>
-                        {hasReturnableItems(sale) && <Button variant="ghost" size="icon" onClick={() => { setCurrentSale(sale); setIsReturnModalOpen(true); }} title="إرجاع"><CornerUpLeft className="h-4 w-4" /></Button>}
-                        <Button variant="ghost" size="icon" onClick={() => { setCurrentSale(sale); setIsSaleModalOpen(true); }} title="تعديل"><Edit className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteSale(sale.id)} title="حذف"><Trash2 className="h-4 w-4" /></Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
-                    {searchTerm ? 'لا توجد نتائج مطابقة للبحث' : 'لا توجد عمليات بيع مسجلة'}
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>الفاتورة</TableHead>
+              <TableHead>المنتجات</TableHead>
+              <TableHead>الإجمالي</TableHead>
+              <TableHead>الدفع</TableHead>
+              <TableHead>التاريخ</TableHead>
+              <TableHead className="text-left">الإجراءات</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-28" /></TableCell>
+                </TableRow>
+              ))
+            ) : filteredSales.length > 0 ? (
+              filteredSales.map((sale) => (
+                <TableRow key={sale.id} className={sale.items.some(item => !getProductById(item.productId)) ? 'bg-muted/50' : ''}>
+                  <TableCell className="font-mono text-xs">#{sale.invoiceNumber}</TableCell>
+                  <TableCell className="max-w-xs truncate" title={getProductNames(sale)}>
+                    {getProductNames(sale)}
+                  </TableCell>
+                  <TableCell className="font-medium">{formatCurrency(sale.total)}</TableCell>
+                  <TableCell><Badge variant="secondary">{sale.paymentMethod === 'cash' ? 'نقدي' : 'آجل'}</Badge></TableCell>
+                  <TableCell>{formatDate(sale.date)}</TableCell>
+                  <TableCell className="text-left">
+                    <div className="flex justify-start gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => handleViewDetails(sale)} title="عرض التفاصيل"><Eye className="h-4 w-4" /></Button>
+                      {hasReturnableItems(sale) && <Button variant="ghost" size="icon" onClick={() => { setCurrentSale(sale); setIsReturnModalOpen(true); }} title="إرجاع"><CornerUpLeft className="h-4 w-4" /></Button>}
+                      <Button variant="ghost" size="icon" onClick={() => { setCurrentSale(sale); setIsSaleModalOpen(true); }} title="تعديل"><Edit className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteSale(sale.id)} title="حذف"><Trash2 className="h-4 w-4" /></Button>
+                    </div>
                   </TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} className="h-24 text-center">
+                  {searchTerm ? 'لا توجد نتائج مطابقة للبحث' : 'لا توجد عمليات بيع مسجلة'}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      
       <SaleModal isOpen={isSaleModalOpen} onClose={() => setIsSaleModalOpen(false)} onSubmit={handleSubmitSale} sale={currentSale} />
       <ReturnProductModal isOpen={isReturnModalOpen} onClose={() => setIsReturnModalOpen(false)} sale={currentSale} />
       <SaleDetailsModal isOpen={isDetailsModalOpen} onClose={() => setIsDetailsModalOpen(false)} sale={currentSale} />
-    </Card>
+    </div>
   );
 }

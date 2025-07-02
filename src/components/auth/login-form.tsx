@@ -1,3 +1,4 @@
+
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -45,9 +46,9 @@ export function LoginForm() {
       setIsLoading(false)
       toast({
         title: "تم تسجيل الدخول بنجاح",
-        description: "جاري توجيهك إلى لوحة التحكم...",
+        description: "جاري توجيهك إلى واجهة التجربة...",
       })
-      router.push('/dashboard')
+      router.push('/#demo')
     }, 1500)
   }
 
