@@ -35,9 +35,20 @@ export interface Sale {
   returns?: SaleReturn[];
 }
 
+export interface Testimonial {
+  id: string;
+  name: string;
+  title: string;
+  quote: string;
+  avatar: string;
+  initials: string;
+  rating: number;
+}
+
 export interface AppContextType {
   products: Product[];
   sales: Sale[];
+  testimonials: Testimonial[];
   loading: boolean;
   addProduct: (productData: Omit<Product, 'id'>) => Promise<void>;
   updateProduct: (id: string, productData: Partial<Omit<Product, 'id'>>) => Promise<void>;

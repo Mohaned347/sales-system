@@ -1,34 +1,26 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import type { Product, Sale, AppContextType, SaleItem, SaleReturn } from '@/types';
+import type { Product, Sale, AppContextType, Testimonial, SaleReturn } from '@/types';
 import { toast } from '@/hooks/use-toast';
+import { db } from '@/lib/firebase';
+import { 
+  collection, 
+  getDocs, 
+  addDoc, 
+  doc, 
+  updateDoc, 
+  deleteDoc, 
+  writeBatch, 
+  runTransaction,
+  documentId,
+  query,
+  where,
+  getDoc
+} from 'firebase/firestore';
+
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
-
-// Helper functions to interact with localStorage
-const getFromStorage = <T,>(key: string, defaultValue: T): T => {
-  if (typeof window === 'undefined') return defaultValue;
-  try {
-    const item = window.localStorage.getItem(key);
-    return item ? JSON.parse(item) : defaultValue;
-  } catch (error) {
-    console.error(`Error reading from localStorage key “${key}”:`, error);
-    return defaultValue;
-  }
-};
-
-const saveToStorage = <T,>(key: string, value: T) => {
-  if (typeof window === 'undefined') return;
-  try {
-    const item = JSON.stringify(value);
-    window.localStorage.setItem(key, item);
-  } catch (error) {
-    console.warn(`Error writing to localStorage key “${key}”:`, error);
-  }
-};
-
-const generateId = () => `id_${new Date().getTime()}_${Math.random().toString(36).substr(2, 9)}`;
 
 const generateInvoiceNumber = () => {
     const now = new Date();
@@ -42,160 +34,225 @@ const generateInvoiceNumber = () => {
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const refreshData = useCallback(() => {
-    setLoading(true);
-    // Simulate async loading
-    setTimeout(() => {
-      let storedProducts = getFromStorage<Product[]>('products', []);
-      if (storedProducts.length === 0) {
-        // Add some mock data if storage is empty
-        storedProducts = [
-          { id: 'mock_prod_1', name: 'لابتوب ديل', price: 250000, stock: 15, category: 'إلكترونيات', barcode: '123456789' },
-          { id: 'mock_prod_2', name: 'كيبورد ميكانيكي', price: 35000, stock: 30, category: 'إكسسوارات', barcode: '987654321' },
-          { id: 'mock_prod_3', name: 'شاشة 24 بوصة', price: 85000, stock: 8, category: 'شاشات', barcode: '112233445' },
+  const seedDatabase = async () => {
+    const productsRef = collection(db, 'products');
+    const productsSnapshot = await getDocs(productsRef);
+    const batch = writeBatch(db);
+
+    if (productsSnapshot.empty) {
+      const mockProducts = [
+        { name: 'لابتوب ديل', price: 250000, stock: 15, category: 'إلكترونيات', barcode: '123456789' },
+        { name: 'كيبورد ميكانيكي', price: 35000, stock: 30, category: 'إكسسوارات', barcode: '987654321' },
+        { name: 'شاشة 24 بوصة', price: 85000, stock: 8, category: 'شاشات', barcode: '112233445' },
+      ];
+      mockProducts.forEach(product => {
+        const newDocRef = doc(productsRef);
+        batch.set(newDocRef, product);
+      });
+    }
+    
+    const testimonialsRef = collection(db, 'testimonials');
+    const testimonialsSnapshot = await getDocs(testimonialsRef);
+    if(testimonialsSnapshot.empty) {
+        const mockTestimonials = [
+            { name: 'أحمد منصور', title: 'مدير مبيعات, شركة تكوين', quote: '"لقد غير مبيعاتي طريقة عملنا تمامًا. أصبح تتبع المبيعات وإدارة المخزون أسهل من أي وقت مضى. أوصي به بشدة!"', avatar: 'https://placehold.co/40x40.png', initials: 'أم', rating: 5 },
+            { name: 'فاطمة الزهراء', title: 'صاحبة متجر إلكتروني', quote: '"كصاحبة عمل صغير، كنت أبحث عن أداة شاملة وبأسعار معقولة. مبيعاتي قدم لي كل ما أحتاجه وأكثر. خدمة العملاء ممتازة أيضًا."', avatar: 'https://placehold.co/40x40.png', initials: 'فز', rating: 5 },
+            { name: 'خالد الغامدي', title: 'مؤسس, شركة ريادة', quote: '"التقارير التحليلية دقيقة جدًا وساعدتني على اتخاذ قرارات أفضل لنمو شركتي. منصة قوية وموثوقة."', avatar: 'https://placehold.co/40x40.png', initials: 'خغ', rating: 4 },
         ];
-        saveToStorage('products', storedProducts);
-      }
-      setProducts(storedProducts);
-      setSales(getFromStorage<Sale[]>('sales', []));
+        mockTestimonials.forEach(testimonial => {
+            const newDocRef = doc(testimonialsRef);
+            batch.set(newDocRef, testimonial);
+        });
+    }
+
+    await batch.commit();
+  };
+
+  const refreshData = useCallback(async () => {
+    setLoading(true);
+    try {
+        await seedDatabase();
+
+        const productsRef = collection(db, 'products');
+        const salesRef = collection(db, 'sales');
+        const testimonialsRef = collection(db, 'testimonials');
+
+        const [productsSnapshot, salesSnapshot, testimonialsSnapshot] = await Promise.all([
+            getDocs(productsRef),
+            getDocs(salesRef),
+            getDocs(testimonialsRef),
+        ]);
+
+        const productsData = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+        const salesData = salesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Sale));
+        const testimonialsData = testimonialsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Testimonial));
+
+        setProducts(productsData);
+        setSales(salesData);
+        setTestimonials(testimonialsData);
+    } catch (error) {
+      console.error("Error refreshing data from Firestore: ", error);
+      toast({ variant: 'destructive', title: 'خطأ في تحميل البيانات', description: 'لم نتمكن من الاتصال بقاعدة البيانات. الرجاء المحاولة مرة أخرى.' });
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   }, []);
 
   useEffect(() => {
-    refreshData();
+    // Check if firebase config is present before trying to connect
+    if (process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+        refreshData();
+    } else {
+        console.warn("Firebase config not found. Skipping Firestore initialization.");
+        setLoading(false);
+    }
   }, [refreshData]);
 
   const addProduct = async (productData: Omit<Product, 'id'>) => {
-    const newProduct: Product = { id: generateId(), ...productData };
-    const updatedProducts = [...products, newProduct];
-    setProducts(updatedProducts);
-    saveToStorage('products', updatedProducts);
+    const docRef = await addDoc(collection(db, 'products'), productData);
+    await refreshData();
   };
 
   const updateProduct = async (id: string, productData: Partial<Omit<Product, 'id'>>) => {
-    const updatedProducts = products.map(p => p.id === id ? { ...p, ...productData } : p);
-    setProducts(updatedProducts);
-    saveToStorage('products', updatedProducts);
+    const docRef = doc(db, 'products', id);
+    await updateDoc(docRef, productData);
+    await refreshData();
   };
 
   const deleteProduct = async (id: string) => {
-    const updatedProducts = products.filter(p => p.id !== id);
-    setProducts(updatedProducts);
-    saveToStorage('products', updatedProducts);
+    const docRef = doc(db, 'products', id);
+    await deleteDoc(docRef);
+    await refreshData();
   };
   
   const getProductById = (id: string) => products.find(p => p.id === id);
 
-  const addSale = async (saleData: Omit<Sale, 'id'>) => {
-    const newSale: Sale = { 
-      ...saleData, 
-      id: generateId(), 
-      invoiceNumber: saleData.invoiceNumber || generateInvoiceNumber(),
-    };
-    
-    // Decrease stock for each item in the sale
-    let stockSufficient = true;
-    const updatedProducts = [...products];
-
-    for (const item of newSale.items) {
-        const productIndex = updatedProducts.findIndex(p => p.id === item.productId);
-        if (productIndex > -1) {
-            if (updatedProducts[productIndex].stock >= item.quantity) {
-                updatedProducts[productIndex].stock -= item.quantity;
-            } else {
-                stockSufficient = false;
-                toast({
-                  variant: "destructive",
-                  title: "خطأ في المخزون",
-                  description: `الكمية غير كافية للمنتج: ${updatedProducts[productIndex].name}`,
-                });
-                break;
-            }
-        } else {
-             stockSufficient = false;
-             toast({
-                variant: "destructive",
-                title: "خطأ",
-                description: `المنتج بالمعرف ${item.productId} غير موجود.`,
-             });
-             break;
+  const addSale = async (saleData: Omit<Sale, 'id' | 'invoiceNumber'> & { invoiceNumber?: string }) => {
+    try {
+      await runTransaction(db, async (transaction) => {
+        const productIds = saleData.items.map(item => item.productId);
+        if (productIds.length === 0) {
+          throw new Error("Cannot add a sale with no items.");
         }
-    }
+        
+        const productsRef = collection(db, "products");
+        const q = query(productsRef, where(documentId(), "in", productIds));
+        
+        const productDocsSnapshot = await getDocs(q);
+        const productDocsOnServer = productDocsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    if (stockSufficient) {
-        const updatedSales = [...sales, newSale];
-        setSales(updatedSales);
-        saveToStorage('sales', updatedSales);
-        setProducts(updatedProducts);
-        saveToStorage('products', updatedProducts);
-    } else {
-        throw new Error("لا يمكن إتمام البيع بسبب عدم كفاية المخزون.");
+        const stockMap = new Map(productDocsOnServer.map(d => [d.id, d.stock]));
+
+        for (const item of saleData.items) {
+          const productOnServer = productDocsOnServer.find(p => p.id === item.productId);
+          if (!productOnServer) {
+              throw new Error(`Product with ID ${item.productId} not found on server.`);
+          }
+          const availableStock = productOnServer.stock;
+          if (availableStock < item.quantity) {
+            throw new Error(`الكمية غير كافية للمنتج: ${productOnServer.name || 'غير معروف'}`);
+          }
+        }
+
+        const batch = writeBatch(db);
+
+        for (const item of saleData.items) {
+          const productRef = doc(db, "products", item.productId);
+          const availableStock = stockMap.get(item.productId);
+          const newStock = availableStock! - item.quantity;
+          batch.update(productRef, { stock: newStock });
+        }
+
+        const newSaleRef = doc(collection(db, "sales"));
+        const newSalePayload: Omit<Sale, 'id'> = {
+            ...saleData,
+            invoiceNumber: saleData.invoiceNumber || generateInvoiceNumber(),
+        };
+        batch.set(newSaleRef, newSalePayload);
+
+        await batch.commit();
+
+      });
+      await refreshData();
+    } catch (e: any) {
+        console.error("Transaction failed: ", e);
+        throw e; // re-throw to be caught by the modal
     }
   };
 
   const updateSale = async (id: string, saleData: Partial<Omit<Sale, 'id'>>) => {
-    // This is a simplified update. A real-world scenario would need complex logic 
-    // to handle stock adjustments between the old and new sale items.
-    const updatedSales = sales.map(s => s.id === id ? { ...s, ...saleData, id } : s);
-    setSales(updatedSales);
-    saveToStorage('sales', updatedSales);
+    const docRef = doc(db, 'sales', id);
     // Note: Stock is not adjusted on update in this simplified version.
+    await updateDoc(docRef, saleData as any);
+    await refreshData();
   };
   
   const deleteSale = async (id: string) => {
-    const saleToDelete = sales.find(s => s.id === id);
-    if (!saleToDelete) return;
+      try {
+        await runTransaction(db, async (transaction) => {
+          const saleRef = doc(db, "sales", id);
+          const saleDoc = await transaction.get(saleRef);
+          if (!saleDoc.exists()) {
+            throw new Error("Sale does not exist!");
+          }
+          const saleData = saleDoc.data() as Sale;
 
-    // Restore stock
-    const updatedProducts = [...products];
-    for (const item of saleToDelete.items) {
-      const productIndex = updatedProducts.findIndex(p => p.id === item.productId);
-      if (productIndex > -1) {
-        updatedProducts[productIndex].stock += item.quantity;
+          // Restore stock
+          for (const item of saleData.items) {
+            const productRef = doc(db, "products", item.productId);
+            const productDoc = await transaction.get(productRef);
+            if (productDoc.exists()) {
+              const currentStock = productDoc.data().stock || 0;
+              transaction.update(productRef, { stock: currentStock + item.quantity });
+            }
+          }
+          transaction.delete(saleRef);
+        });
+        await refreshData();
+      } catch (e) {
+        console.error("Transaction failed: ", e);
+        throw e;
       }
-    }
-
-    const updatedSales = sales.filter(s => s.id !== id);
-    setSales(updatedSales);
-    saveToStorage('sales', updatedSales);
-    setProducts(updatedProducts);
-    saveToStorage('products', updatedProducts);
   };
 
   const returnProduct = async (returnData: { saleId: string; productId: string; quantity: number }) => {
       const { saleId, productId, quantity } = returnData;
+      try {
+        await runTransaction(db, async (transaction) => {
+          const saleRef = doc(db, "sales", saleId);
+          const productRef = doc(db, "products", productId);
 
-      const updatedSales = [...sales];
-      const saleIndex = updatedSales.findIndex(s => s.id === saleId);
-      if (saleIndex === -1) throw new Error("Sale not found");
+          const saleDoc = await transaction.get(saleRef);
+          const productDoc = await transaction.get(productRef);
 
-      const saleToUpdate = { ...updatedSales[saleIndex] };
-      const newReturn: SaleReturn = {
-          productId,
-          quantity,
-          date: new Date().toISOString(),
-      };
+          if (!saleDoc.exists()) throw new Error("Sale not found");
+          if (!productDoc.exists()) throw new Error("Product not found");
+
+          const saleToUpdate = saleDoc.data() as Sale;
+          const newReturn: SaleReturn = {
+              productId,
+              quantity,
+              date: new Date().toISOString(),
+          };
       
-      saleToUpdate.returns = [...(saleToUpdate.returns || []), newReturn];
-      updatedSales[saleIndex] = saleToUpdate;
+          const updatedReturns = [...(saleToUpdate.returns || []), newReturn];
+          transaction.update(saleRef, { returns: updatedReturns });
 
-      const updatedProducts = [...products];
-      const productIndex = updatedProducts.findIndex(p => p.id === productId);
-      if (productIndex > -1) {
-          updatedProducts[productIndex].stock += quantity;
+          const currentStock = productDoc.data().stock || 0;
+          transaction.update(productRef, { stock: currentStock + quantity });
+        });
+        await refreshData();
+      } catch (e) {
+        console.error("Transaction failed: ", e);
+        throw e;
       }
-
-      setSales(updatedSales);
-      saveToStorage('sales', updatedSales);
-      setProducts(updatedProducts);
-      saveToStorage('products', updatedProducts);
   };
 
   return (
-    <AppContext.Provider value={{ products, sales, loading, addProduct, updateProduct, deleteProduct, getProductById, addSale, updateSale, deleteSale, returnProduct, refreshData }}>
+    <AppContext.Provider value={{ products, sales, testimonials, loading, addProduct, updateProduct, deleteProduct, getProductById, addSale, updateSale, deleteSale, returnProduct, refreshData }}>
       {children}
     </AppContext.Provider>
   );

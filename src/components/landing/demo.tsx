@@ -1,11 +1,10 @@
 
 "use client";
 
-import { AppProvider } from '@/context/app-context';
 import Products from '@/components/dashboard/products';
 import Sales from '@/components/dashboard/sales';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 
 export default function Demo() {
   return (
@@ -19,24 +18,22 @@ export default function Demo() {
             هذا ليس مجرد عرض، بل هي نسخة تفاعلية بالكامل من النظام. يمكنك إضافة منتجات وتسجيل مبيعات ورؤية التغييرات فوراً. كل البيانات تحفظ مؤقتاً في متصفحك.
           </p>
         </div>
-        <AppProvider>
-          <Card className="shadow-2xl">
-            <Tabs defaultValue="products" className="w-full">
-              <div className="p-4 border-b">
-                <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2">
-                  <TabsTrigger value="products">إدارة المنتجات</TabsTrigger>
-                  <TabsTrigger value="sales">إدارة المبيعات</TabsTrigger>
-                </TabsList>
-              </div>
-              <TabsContent value="products" className="p-0">
-                  <Products />
-              </TabsContent>
-              <TabsContent value="sales" className="p-0">
-                  <Sales />
-              </TabsContent>
-            </Tabs>
-          </Card>
-        </AppProvider>
+        <Card className="shadow-2xl">
+          <Tabs defaultValue="products" className="w-full">
+            <div className="p-4 border-b">
+              <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2">
+                <TabsTrigger value="products">إدارة المنتجات</TabsTrigger>
+                <TabsTrigger value="sales">إدارة المبيعات</TabsTrigger>
+              </TabsList>
+            </div>
+            <TabsContent value="products" className="p-0">
+                <Products />
+            </TabsContent>
+            <TabsContent value="sales" className="p-0">
+                <Sales />
+            </TabsContent>
+          </Tabs>
+        </Card>
       </div>
     </section>
   );
