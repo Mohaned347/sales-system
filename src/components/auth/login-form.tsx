@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
+import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -25,6 +26,7 @@ const formSchema = z.object({
 
 export function LoginForm() {
   const { toast } = useToast()
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -45,7 +47,7 @@ export function LoginForm() {
         title: "تم تسجيل الدخول بنجاح",
         description: "جاري توجيهك إلى لوحة التحكم...",
       })
-      // Here you would redirect the user, e.g., router.push('/dashboard')
+      router.push('/dashboard')
     }, 1500)
   }
 
@@ -79,7 +81,7 @@ export function LoginForm() {
           )}
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           تسجيل الدخول
         </Button>
       </form>
