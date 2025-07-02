@@ -27,7 +27,7 @@ export default function Pricing() {
           </p>
         </div>
         <div className="flex justify-center">
-            <Card className="w-full max-w-2xl shadow-2xl border-primary ring-2 ring-primary/50 flex flex-col">
+            <Card className="w-full max-w-2xl shadow-2xl border-primary ring-2 ring-primary/50 flex flex-col transition-all duration-300 hover:-translate-y-2">
               <CardHeader className="text-center bg-card p-8 rounded-t-lg">
                   <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
                     <Rocket className="w-12 h-12 text-primary" />

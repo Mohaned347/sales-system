@@ -7,13 +7,13 @@ export default function Hero() {
   return (
     <section id="hero" className="py-20 md:py-32 bg-background relative overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-        <h2 className="text-4xl md:text-6xl font-extrabold font-headline text-foreground mb-4">
+        <h2 className="text-4xl md:text-6xl font-extrabold font-headline text-foreground mb-4 opacity-0 animate-fade-in-down">
           منصتك المتكاملة لإدارة المبيعات
         </h2>
-        <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+        <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8 opacity-0 animate-fade-in-down [animation-delay:200ms]">
           بسّط مبيعاتك، أدر مخزونك، وتعامل مع الفواتير بكل سهولة. مركزي للمبيعات هو الأداة الوحيدة التي تحتاجها لتنمية أعمالك وتحقيق النجاح.
         </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-center gap-4 opacity-0 animate-fade-in-down [animation-delay:400ms]">
           <Button size="lg" asChild>
             <Link href="/signup">
               ابدأ تجربتك المجانية <ArrowLeft className="mr-2" />
@@ -25,7 +25,7 @@ export default function Hero() {
             </Link>
           </Button>
         </div>
-        <div className="mt-16">
+        <div className="mt-16 opacity-0 animate-fade-in-down [animation-delay:600ms]">
           <Image
             src="https://placehold.co/1200x600.png"
             alt="لوحة تحكم مركزي للمبيعات"

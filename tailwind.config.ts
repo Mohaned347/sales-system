@@ -101,12 +101,23 @@ export default {
           '100%': {
             transform: 'translate(0px, 0px) scale(1)',
           },
+        },
+        'fade-in-down': {
+          'from': {
+            opacity: '0',
+            transform: 'translateY(-1rem)'
+          },
+          'to': {
+            opacity: '1',
+            transform: 'translateY(0)'
+          }
         }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'blob': 'blob 7s infinite',
+        'fade-in-down': 'fade-in-down 0.6s ease-out forwards'
       },
     },
   },
