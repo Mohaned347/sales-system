@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useForm, useFieldArray, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -74,11 +74,11 @@ export default function SaleModal({ isOpen, onClose, onSubmit, sale }: SaleModal
     const watchedDiscountType = watch('discountType');
     const watchedTax = watch('tax');
 
-    const subtotal = React.useMemo(() => 
+    const subtotal = useMemo(() => 
         watchedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
     [watchedItems]);
 
-    const total = React.useMemo(() => {
+    const total = useMemo(() => {
         const discountAmount = watchedDiscountType === 'percentage' 
           ? subtotal * (watchedDiscount / 100)
           : watchedDiscount;
