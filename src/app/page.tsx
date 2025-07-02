@@ -5,6 +5,7 @@ import Hero from '@/components/landing/hero';
 import Features from '@/components/landing/features';
 import Demo from '@/components/landing/demo';
 import UseCases from '@/components/landing/use-cases';
+import ResponsiveDemo from '@/components/landing/responsive-demo';
 import Testimonials from '@/components/landing/testimonials';
 import Pricing from '@/components/landing/pricing';
 import Faq from '@/components/landing/faq';
@@ -24,6 +25,7 @@ export default function Home() {
           <Features />
           <Demo />
           <UseCases />
+          <ResponsiveDemo />
           <Testimonials />
           <Pricing />
           <Faq />

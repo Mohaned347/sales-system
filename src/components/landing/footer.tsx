@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { LogoIcon } from '@/components/icons/logo';
+import Image from 'next/image';
 import TestimonialForm from './testimonial-form';
 
 const FacebookIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -65,10 +65,7 @@ export default function Footer() {
 
         <div className="border-t pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
-            <LogoIcon className="w-7 h-7 text-primary" />
-            <span className="text-xl font-bold font-headline text-foreground">
-              مبيعاتي
-            </span>
+             <Image src="https://placehold.co/140x40.png" alt="مبيعاتي Logo" width={140} height={40} data-ai-hint="sales logo" />
           </div>
           <p className="text-sm text-muted-foreground">
             &copy; {new Date().getFullYear()} مبيعاتي. جميع الحقوق محفوظة.

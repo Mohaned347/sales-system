@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { LogoIcon } from '@/components/icons/logo';
+import Image from 'next/image';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
 import React from 'react';
@@ -19,10 +19,7 @@ export default function Header() {
     <header className="py-4 px-4 sm:px-6 lg:px-8 bg-background/80 backdrop-blur-sm sticky top-0 z-50 border-b">
       <div className="container mx-auto flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2">
-          <LogoIcon className="w-8 h-8 text-primary" />
-          <h1 className="text-2xl font-bold font-headline text-foreground">
-            مبيعاتي
-          </h1>
+          <Image src="https://placehold.co/140x40.png" alt="مبيعاتي Logo" width={140} height={40} data-ai-hint="sales logo" />
         </Link>
         
         {/* Desktop Navigation */}
@@ -51,8 +48,7 @@ export default function Header() {
             <SheetContent side="right">
                <div className="p-4 border-b">
                  <Link href="/" className="flex items-center gap-2">
-                    <LogoIcon className="w-8 h-8 text-primary" />
-                    <span className="text-xl font-bold font-headline">مبيعاتي</span>
+                    <Image src="https://placehold.co/140x40.png" alt="مبيعاتي Logo" width={140} height={40} data-ai-hint="sales logo" />
                 </Link>
                </div>
               <nav className="flex flex-col gap-4 mt-8 px-4">

@@ -37,12 +37,12 @@ export default function CompanyProfile() {
           <Card className="shadow-lg overflow-hidden md:grid md:grid-cols-3 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10">
             <div className="md:col-span-1 flex items-center justify-center p-8 bg-primary/5">
                <Image
-                src="https://placehold.co/200x200.png"
-                alt="شعار شركة مونتي قو اس دي ان"
-                width={150}
-                height={150}
+                src="https://placehold.co/300x300.png"
+                alt="فريق مبيعات"
+                width={200}
+                height={200}
                 className="rounded-full shadow-md object-cover ring-4 ring-primary/20"
-                data-ai-hint="company logo montygo"
+                data-ai-hint="sales team meeting"
               />
             </div>
             <div className="md:col-span-2 p-8 flex flex-col justify-center">

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
+import dashboardimage from './photos/Untitled (10).png';
 
 export default function Hero() {
   return (
@@ -27,7 +28,7 @@ export default function Hero() {
         </div>
         <div className="mt-16 opacity-0 animate-fade-in-down [animation-delay:600ms]">
           <Image
-            src="https://placehold.co/1200x600.png"
+            src= {dashboardimage}
             alt="لوحة تحكم مبيعاتي"
             width={1200}
             height={600}
