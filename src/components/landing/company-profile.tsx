@@ -45,7 +45,7 @@ export default function CompanyProfile() {
             <div className="md:col-span-2 p-8 flex flex-col justify-center">
               <h3 className="text-2xl font-bold text-primary mb-2">مونتي قو اس دي ان</h3>
               <p className="text-muted-foreground mb-6">
-                مونتي قو اس دي ان هي شركة تكنولوجية متخصصة في صناعة السوفتوير والأنظمة، كما أنها متخصصة في التجارة والأعمال الأخرى.
+                مونتي قو اس دي ان هي شركة تكنولوجية رائدة، متخصصة في تطوير حلول البرمجيات والأنظمة المبتكرة. بخبرتنا التي تمتد لتشمل التجارة وقطاعات الأعمال المتنوعة، نقدم منتجات تجمع بين القوة التقنية والفهم العميق لاحتياجات السوق.
               </p>
               <div className="flex items-center gap-4 mt-auto pt-4 border-t">
                 <p className="font-semibold text-foreground">تواصل معنا:</p>
