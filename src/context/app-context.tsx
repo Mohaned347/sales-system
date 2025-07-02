@@ -43,9 +43,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (storedProducts.length === 0) {
         // Add some mock data if storage is empty
         storedProducts = [
-          { id: generateId(), name: 'لابتوب ديل', price: 250000, stock: 15, category: 'إلكترونيات', barcode: '123456789' },
-          { id: generateId(), name: 'كيبورد ميكانيكي', price: 35000, stock: 30, category: 'إكسسوارات', barcode: '987654321' },
-          { id: generateId(), name: 'شاشة 24 بوصة', price: 85000, stock: 8, category: 'شاشات', barcode: '112233445' },
+          { id: 'mock_prod_1', name: 'لابتوب ديل', price: 250000, stock: 15, category: 'إلكترونيات', barcode: '123456789' },
+          { id: 'mock_prod_2', name: 'كيبورد ميكانيكي', price: 35000, stock: 30, category: 'إكسسوارات', barcode: '987654321' },
+          { id: 'mock_prod_3', name: 'شاشة 24 بوصة', price: 85000, stock: 8, category: 'شاشات', barcode: '112233445' },
         ];
         saveToStorage('products', storedProducts);
       }
