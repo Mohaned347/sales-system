@@ -58,5 +58,6 @@ export interface AppContextType {
   updateSale: (id: string, saleData: Partial<Omit<Sale, 'id'>>) => Promise<void>;
   deleteSale: (id: string) => Promise<void>;
   returnProduct: (returnData: { saleId: string; productId: string; quantity: number }) => Promise<void>;
+  addTestimonial: (testimonialData: Omit<Testimonial, 'id' | 'avatar' | 'initials'>) => Promise<void>;
   refreshData: () => void;
 }

@@ -250,9 +250,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         throw e;
       }
   };
+  
+  const addTestimonial = async (testimonialData: Omit<Testimonial, 'id' | 'avatar' | 'initials'>) => {
+    const getInitials = (name: string) => {
+        const names = name.split(' ');
+        if (names.length > 1) {
+            return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+        }
+        return name.substring(0, 2).toUpperCase();
+    };
+
+    const newTestimonial = {
+        ...testimonialData,
+        initials: getInitials(testimonialData.name),
+        avatar: `https://placehold.co/40x40.png`,
+    };
+
+    await addDoc(collection(db, 'testimonials'), newTestimonial);
+    await refreshData();
+  };
 
   return (
-    <AppContext.Provider value={{ products, sales, testimonials, loading, addProduct, updateProduct, deleteProduct, getProductById, addSale, updateSale, deleteSale, returnProduct, refreshData }}>
+    <AppContext.Provider value={{ products, sales, testimonials, loading, addProduct, updateProduct, deleteProduct, getProductById, addSale, updateSale, deleteSale, returnProduct, addTestimonial, refreshData }}>
       {children}
     </AppContext.Provider>
   );
