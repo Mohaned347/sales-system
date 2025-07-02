@@ -5,48 +5,51 @@ import { CheckCircle } from 'lucide-react';
 
 const plans = [
   {
-    name: 'Starter',
+    name: 'المبتدئة',
     price: '$29',
-    period: 'per month',
-    description: 'For small teams and startups getting off the ground.',
+    period: 'شهرياً',
+    description: 'مثالية للفرق الصغيرة والشركات الناشئة.',
     features: [
-      'Sales Tracking',
-      'Inventory Management (up to 100 products)',
-      'Basic Reporting',
-      'Email Support',
+      'تتبع المبيعات',
+      'إدارة المخزون (حتى 100 منتج)',
+      'تقارير أساسية',
+      'دعم عبر البريد الإلكتروني',
     ],
-    cta: 'Start Free Trial',
+    cta: 'ابدأ التجربة المجانية',
     popular: false,
+    link: '/signup'
   },
   {
-    name: 'Pro',
+    name: 'الاحترافية',
     price: '$79',
-    period: 'per month',
-    description: 'For growing businesses that need more power and support.',
+    period: 'شهرياً',
+    description: 'للشركات النامية التي تحتاج إلى قوة ودعم أكبر.',
     features: [
-      'Everything in Starter',
-      'Advanced Reporting',
-      'Inventory Management (unlimited products)',
-      'API Access',
-      'Priority Support',
+      'كل شيء في الخطة المبتدئة',
+      'تقارير متقدمة وتفصيلية',
+      'إدارة مخزون غير محدودة',
+      'وصول لواجهة برمجة التطبيقات (API)',
+      'دعم فني ذو أولوية',
     ],
-    cta: 'Start Free Trial',
+    cta: 'ابدأ التجربة المجانية',
     popular: true,
+    link: '/signup'
   },
   {
-    name: 'Enterprise',
-    price: 'Custom',
+    name: 'المؤسسات',
+    price: 'مخصص',
     period: '',
-    description: 'For large organizations with custom needs.',
+    description: 'للشركات الكبيرة ذات الاحتياجات المخصصة.',
     features: [
-      'Everything in Pro',
-      'Dedicated Account Manager',
-      'Custom Integrations',
-      'On-premise option',
-      '24/7 Support',
+      'كل شيء في الخطة الاحترافية',
+      'مدير حساب مخصص',
+      'تكاملات مخصصة',
+      'خيار التثبيت المحلي',
+      'دعم على مدار 24/7',
     ],
-    cta: 'Contact Sales',
+    cta: 'تواصل مع المبيعات',
     popular: false,
+    link: '#contact'
   },
 ];
 
@@ -56,10 +59,10 @@ export default function Pricing() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold font-headline text-foreground">
-            Find the Perfect Plan
+            اختر الخطة التي تناسبك
           </h2>
           <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">
-            Start for free, then choose a plan that fits your business needs. No hidden fees, cancel anytime.
+            ابدأ مجانًا، ثم اختر الخطة التي تناسب احتياجات عملك. لا توجد رسوم خفية، ويمكنك الإلغاء في أي وقت.
           </p>
         </div>
         <div className="grid lg:grid-cols-3 gap-8 items-stretch">
@@ -68,7 +71,7 @@ export default function Pricing() {
               <CardHeader className="relative pb-4">
                 {plan.popular && (
                   <div className="absolute top-0 -translate-y-1/2 bg-accent text-accent-foreground px-3 py-1 text-sm font-semibold rounded-full shadow-md">
-                    Most Popular
+                    الأكثر شيوعًا
                   </div>
                 )}
                 <CardTitle className="font-headline pt-4">{plan.name}</CardTitle>
@@ -90,7 +93,7 @@ export default function Pricing() {
               </CardContent>
               <CardFooter>
                 <Button asChild className="w-full" variant={plan.popular ? 'default' : 'outline'}>
-                  <Link href="/signup">{plan.cta}</Link>
+                  <Link href={plan.link}>{plan.cta}</Link>
                 </Button>
               </CardFooter>
             </Card>

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 
 export default function Hero() {
@@ -8,27 +8,27 @@ export default function Hero() {
     <section id="hero" className="py-20 md:py-32 bg-background relative overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
         <h2 className="text-4xl md:text-6xl font-extrabold font-headline text-foreground mb-4">
-          Your All-in-One Sales Platform
+          منصتك المتكاملة لإدارة المبيعات
         </h2>
         <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-          Streamline your sales, manage inventory, and handle billing with ease. MySales Hub is the only tool you need to grow your business.
+          بسّط مبيعاتك، أدر مخزونك، وتعامل مع الفواتير بكل سهولة. مركزي للمبيعات هو الأداة الوحيدة التي تحتاجها لتنمية أعمالك وتحقيق النجاح.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Button size="lg" asChild>
             <Link href="/signup">
-              Start 5-Day Free Trial <ArrowRight className="ml-2" />
+              ابدأ تجربتك المجانية <ArrowLeft className="mr-2" />
             </Link>
           </Button>
           <Button size="lg" variant="outline" asChild>
             <Link href="#demo">
-              See the Demo
+              شاهد العرض التوضيحي
             </Link>
           </Button>
         </div>
         <div className="mt-16">
           <Image
             src="https://placehold.co/1200x600.png"
-            alt="MySales Hub Dashboard"
+            alt="لوحة تحكم مركزي للمبيعات"
             width={1200}
             height={600}
             className="rounded-lg shadow-2xl mx-auto"

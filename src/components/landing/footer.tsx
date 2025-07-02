@@ -9,18 +9,18 @@ export default function Footer() {
           <div className="flex items-center gap-2">
             <ShoppingCart className="w-7 h-7 text-primary" />
             <span className="text-xl font-bold font-headline text-foreground">
-              MySales Hub
+              مركزي للمبيعات
             </span>
           </div>
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} MySales Hub. All rights reserved.
+            &copy; {new Date().getFullYear()} مركزي للمبيعات. جميع الحقوق محفوظة.
           </p>
           <div className="flex gap-4">
             <Link href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Terms of Service
+              شروط الخدمة
             </Link>
             <Link href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Privacy Policy
+              سياسة الخصوصية
             </Link>
           </div>
         </div>

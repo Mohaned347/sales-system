@@ -8,10 +8,10 @@ export default function Demo() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold font-headline text-foreground">
-            See MySales Hub in Action
+            شاهد قوة "مركزي للمبيعات"
           </h2>
           <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">
-            Explore our core features through this interactive demo. Click through the tabs to see how we can transform your business operations.
+            استكشف ميزاتنا الأساسية من خلال هذا العرض التفاعلي. تنقّل بين علامات التبويب لترى كيف يمكننا تحويل عمليات عملك وزيادة إنتاجيتك.
           </p>
         </div>
         <Card className="shadow-2xl">
@@ -19,15 +19,15 @@ export default function Demo() {
             <Tabs defaultValue="dashboard" className="w-full">
               <div className="p-4 border-b">
                 <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3">
-                  <TabsTrigger value="dashboard">Sales Dashboard</TabsTrigger>
-                  <TabsTrigger value="inventory">Inventory</TabsTrigger>
-                  <TabsTrigger value="billing">Billing</TabsTrigger>
+                  <TabsTrigger value="dashboard">لوحة المبيعات</TabsTrigger>
+                  <TabsTrigger value="inventory">إدارة المخزون</TabsTrigger>
+                  <TabsTrigger value="billing">الفواتير والتحصيل</TabsTrigger>
                 </TabsList>
               </div>
               <TabsContent value="dashboard" className="p-4 md:p-6">
                  <Image
                     src="https://placehold.co/1200x700.png"
-                    alt="Sales Dashboard"
+                    alt="لوحة المبيعات"
                     width={1200}
                     height={700}
                     className="rounded-md w-full shadow-inner border"
@@ -37,7 +37,7 @@ export default function Demo() {
               <TabsContent value="inventory" className="p-4 md:p-6">
                 <Image
                     src="https://placehold.co/1200x700.png"
-                    alt="Inventory Management"
+                    alt="إدارة المخزون"
                     width={1200}
                     height={700}
                     className="rounded-md w-full shadow-inner border"
@@ -47,7 +47,7 @@ export default function Demo() {
               <TabsContent value="billing" className="p-4 md:p-6">
                 <Image
                     src="https://placehold.co/1200x700.png"
-                    alt="Billing"
+                    alt="الفواتير"
                     width={1200}
                     height={700}
                     className="rounded-md w-full shadow-inner border"

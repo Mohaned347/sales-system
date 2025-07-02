@@ -20,13 +20,13 @@ import { Card } from "../ui/card";
 
 const formSchema = z.object({
   name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
+    message: "يجب أن يتكون الاسم من حرفين على الأقل.",
   }),
   email: z.string().email({
-    message: "Please enter a valid email address.",
+    message: "الرجاء إدخال بريد إلكتروني صالح.",
   }),
   message: z.string().min(10, {
-    message: "Message must be at least 10 characters.",
+    message: "يجب أن تتكون الرسالة من 10 أحرف على الأقل.",
   }),
 });
 
@@ -45,8 +45,8 @@ export default function Contact() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
     toast({
-      title: "Message Sent!",
-      description: "Thanks for reaching out. We'll get back to you soon.",
+      title: "تم إرسال الرسالة!",
+      description: "شكرًا لتواصلك معنا. سنعاود الاتصال بك قريبًا.",
     });
     form.reset();
   }
@@ -57,13 +57,13 @@ export default function Contact() {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold font-headline text-foreground">
-              Get in Touch
+              تواصل معنا
             </h2>
             <p className="text-lg text-muted-foreground mt-4">
-              Have questions or need support? Fill out the form, and our team will get back to you as soon as possible.
+              هل لديك أسئلة أو تحتاج إلى دعم؟ املأ النموذج، وسيقوم فريقنا بالرد عليك في أقرب وقت ممكن.
             </p>
             <div className="mt-8">
-                <Image src="https://placehold.co/600x400.png" alt="Contact support" width={600} height={400} className="rounded-lg shadow-lg" data-ai-hint="customer support"/>
+                <Image src="https://placehold.co/600x400.png" alt="تواصل مع الدعم" width={600} height={400} className="rounded-lg shadow-lg" data-ai-hint="customer support"/>
             </div>
           </div>
           <Card className="p-8 shadow-xl">
@@ -74,9 +74,9 @@ export default function Contact() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Full Name</FormLabel>
+                      <FormLabel>الاسم الكامل</FormLabel>
                       <FormControl>
-                        <Input placeholder="John Doe" {...field} />
+                        <Input placeholder="مثال: أحمد محمد" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -87,9 +87,9 @@ export default function Contact() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email Address</FormLabel>
+                      <FormLabel>البريد الإلكتروني</FormLabel>
                       <FormControl>
-                        <Input placeholder="john.doe@example.com" {...field} />
+                        <Input placeholder="you@example.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -100,15 +100,15 @@ export default function Contact() {
                   name="message"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Message</FormLabel>
+                      <FormLabel>رسالتك</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="How can we help you?" {...field} rows={5} />
+                        <Textarea placeholder="كيف يمكننا مساعدتك؟" {...field} rows={5} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full">Send Message</Button>
+                <Button type="submit" className="w-full">إرسال الرسالة</Button>
               </form>
             </Form>
           </Card>

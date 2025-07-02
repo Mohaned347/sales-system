@@ -9,20 +9,20 @@ export default function SignUpPage() {
         <div className="absolute top-4 left-4">
           <Link href="/" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
             <ShoppingCart className="w-6 h-6" />
-            <span className="text-xl font-bold font-headline">MySales Hub</span>
+            <span className="text-xl font-bold font-headline">مركزي للمبيعات</span>
           </Link>
         </div>
       <Card className="w-full max-w-md shadow-xl bg-card">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-headline">Create an Account</CardTitle>
-          <CardDescription>Start your 5-day free trial today. No credit card required.</CardDescription>
+          <CardTitle className="text-3xl font-headline">أنشئ حسابك الجديد</CardTitle>
+          <CardDescription>ابدأ تجربتك المجانية لمدة 5 أيام اليوم. لا حاجة لبطاقة ائتمان.</CardDescription>
         </CardHeader>
         <CardContent>
           <SignUpForm />
           <div className="mt-4 text-center text-sm">
-            Already have an account?{' '}
+            هل لديك حساب بالفعل؟{' '}
             <Link href="/login" className="underline hover:text-primary">
-              Log in
+              سجل الدخول
             </Link>
           </div>
         </CardContent>

@@ -9,15 +9,15 @@ export default function Header() {
         <Link href="/" className="flex items-center gap-2">
           <ShoppingCart className="w-8 h-8 text-primary" />
           <h1 className="text-2xl font-bold font-headline text-foreground">
-            MySales Hub
+            مركزي للمبيعات
           </h1>
         </Link>
         <nav className="hidden md:flex items-center gap-2">
           <Button variant="ghost" asChild>
-            <Link href="/login">Login</Link>
+            <Link href="/login">تسجيل الدخول</Link>
           </Button>
           <Button asChild>
-            <Link href="/signup">Sign Up</Link>
+            <Link href="/signup">إنشاء حساب</Link>
           </Button>
         </nav>
       </div>

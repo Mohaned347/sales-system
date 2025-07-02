@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'MySales Hub',
-  description: 'Streamline your sales process with MySales Hub',
+  title: 'مركزي للمبيعات | منصة المبيعات المتكاملة',
+  description: 'بسّط عملياتك، وعزز مبيعاتك مع مركزي للمبيعات.',
 };
 
 export default function RootLayout({
@@ -13,11 +13,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" style={{scrollBehavior:'smooth'}}>
+    <html lang="ar" dir="rtl" style={{scrollBehavior:'smooth'}}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800;900&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
         {children}

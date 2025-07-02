@@ -19,8 +19,8 @@ import { Loader2 } from "lucide-react"
 import { useState } from "react"
 
 const formSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email." }),
-  password: z.string().min(1, { message: "Password is required." }),
+  email: z.string().email({ message: "الرجاء إدخال بريد إلكتروني صالح." }),
+  password: z.string().min(1, { message: "كلمة المرور مطلوبة." }),
 })
 
 export function LoginForm() {
@@ -42,8 +42,8 @@ export function LoginForm() {
     setTimeout(() => {
       setIsLoading(false)
       toast({
-        title: "Login Successful",
-        description: "Redirecting to your dashboard...",
+        title: "تم تسجيل الدخول بنجاح",
+        description: "جاري توجيهك إلى لوحة التحكم...",
       })
       // Here you would redirect the user, e.g., router.push('/dashboard')
     }, 1500)
@@ -57,7 +57,7 @@ export function LoginForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>البريد الإلكتروني</FormLabel>
               <FormControl>
                 <Input placeholder="you@example.com" {...field} />
               </FormControl>
@@ -70,7 +70,7 @@ export function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>كلمة المرور</FormLabel>
               <FormControl>
                 <Input type="password" placeholder="••••••••" {...field} />
               </FormControl>
@@ -79,8 +79,8 @@ export function LoginForm() {
           )}
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Log In
+          {isLoading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+          تسجيل الدخول
         </Button>
       </form>
     </Form>

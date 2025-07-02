@@ -9,20 +9,20 @@ export default function LoginPage() {
        <div className="absolute top-4 left-4">
           <Link href="/" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
             <ShoppingCart className="w-6 h-6" />
-            <span className="text-xl font-bold font-headline">MySales Hub</span>
+            <span className="text-xl font-bold font-headline">مركزي للمبيعات</span>
           </Link>
         </div>
       <Card className="w-full max-w-md shadow-xl bg-card">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-headline">Welcome Back</CardTitle>
-          <CardDescription>Enter your credentials to access your account.</CardDescription>
+          <CardTitle className="text-3xl font-headline">أهلاً بعودتك</CardTitle>
+          <CardDescription>أدخل بياناتك للوصول إلى حسابك.</CardDescription>
         </CardHeader>
         <CardContent>
           <LoginForm />
           <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{' '}
+            ليس لديك حساب؟{' '}
             <Link href="/signup" className="underline hover:text-primary">
-              Sign up
+              أنشئ حسابًا
             </Link>
           </div>
         </CardContent>
