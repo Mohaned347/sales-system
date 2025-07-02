@@ -55,8 +55,9 @@ export function DashboardClientLayout({
             <div className="hidden border-l bg-card md:block">
                 <div className="flex h-full max-h-screen flex-col gap-2">
                     <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-                        <Link href="/" className="flex items-center gap-2 font-semibold">
-                            <Image src="https://placehold.co/140x40.png" alt="مبيعاتي Logo" width={120} height={30} data-ai-hint="sales logo" />
+                        <Link href="/" className="flex items-center gap-3 font-semibold">
+                            <Image src="https://placehold.co/40x40.png" alt="مبيعاتي Logo" width={32} height={32} className="rounded-md" data-ai-hint="logo" />
+                            <span className="text-xl font-bold">مبيعاتي</span>
                         </Link>
                     </div>
                     <div className="flex-1">
@@ -79,8 +80,9 @@ export function DashboardClientLayout({
                         </SheetTrigger>
                         <SheetContent side="right" className="flex flex-col">
                             <div className="flex h-14 items-center border-b px-4">
-                                <Link href="/" className="flex items-center gap-2 font-semibold">
-                                    <Image src="https://placehold.co/140x40.png" alt="مبيعاتي Logo" width={120} height={30} data-ai-hint="sales logo" />
+                                <Link href="/" className="flex items-center gap-3 font-semibold">
+                                    <Image src="https://placehold.co/40x40.png" alt="مبيعاتي Logo" width={32} height={32} className="rounded-md" data-ai-hint="logo" />
+                                    <span className="text-xl font-bold">مبيعاتي</span>
                                 </Link>
                             </div>
                             {navLinks}

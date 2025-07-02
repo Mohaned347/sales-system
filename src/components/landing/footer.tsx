@@ -64,8 +64,9 @@ export default function Footer() {
         </div>
 
         <div className="border-t pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2">
-             <Image src="https://placehold.co/140x40.png" alt="مبيعاتي Logo" width={140} height={40} data-ai-hint="sales logo" />
+          <div className="flex items-center gap-3">
+             <Image src="https://placehold.co/40x40.png" alt="مبيعاتي Logo" width={40} height={40} className="rounded-md" data-ai-hint="logo" />
+             <span className="text-2xl font-bold text-foreground">مبيعاتي</span>
           </div>
           <p className="text-sm text-muted-foreground">
             &copy; {new Date().getFullYear()} مبيعاتي. جميع الحقوق محفوظة.

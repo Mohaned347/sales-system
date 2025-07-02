@@ -18,8 +18,9 @@ export default function Header() {
   return (
     <header className="py-4 px-4 sm:px-6 lg:px-8 bg-background/80 backdrop-blur-sm sticky top-0 z-50 border-b">
       <div className="container mx-auto flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2">
-          <Image src="https://placehold.co/140x40.png" alt="مبيعاتي Logo" width={140} height={40} data-ai-hint="sales logo" />
+        <Link href="/" className="flex items-center gap-3">
+          <Image src="https://placehold.co/40x40.png" alt="مبيعاتي Logo" width={40} height={40} className="rounded-md" data-ai-hint="logo" />
+          <span className="text-2xl font-bold font-headline text-foreground">مبيعاتي</span>
         </Link>
         
         {/* Desktop Navigation */}
@@ -47,8 +48,9 @@ export default function Header() {
             </SheetTrigger>
             <SheetContent side="right">
                <div className="p-4 border-b">
-                 <Link href="/" className="flex items-center gap-2">
-                    <Image src="https://placehold.co/140x40.png" alt="مبيعاتي Logo" width={140} height={40} data-ai-hint="sales logo" />
+                 <Link href="/" className="flex items-center gap-3">
+                    <Image src="https://placehold.co/40x40.png" alt="مبيعاتي Logo" width={40} height={40} className="rounded-md" data-ai-hint="logo" />
+                    <span className="text-2xl font-bold font-headline text-foreground">مبيعاتي</span>
                 </Link>
                </div>
               <nav className="flex flex-col gap-4 mt-8 px-4">
