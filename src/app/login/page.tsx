@@ -18,7 +18,7 @@ export default function LoginPage() {
             <div className="mt-4 text-center text-sm">
               ليس لديك حساب؟{' '}
               <Link href="/signup" className="underline hover:text-primary">
-                أنشئ حسابًا
+                ابدأ تجربتك المجانية
               </Link>
             </div>
           </CardContent>

@@ -54,7 +54,7 @@ export default function Pricing() {
               </CardContent>
               <CardFooter className="p-8 pt-0 mt-auto">
                 <Button asChild className="w-full text-lg py-6 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-shadow">
-                  <Link href={'/signup'}>اشترك الآن وابدأ رحلة النجاح</Link>
+                  <Link href={'/signup'}>ابدأ تجربتك المجانية الآن</Link>
                 </Button>
               </CardFooter>
             </Card>

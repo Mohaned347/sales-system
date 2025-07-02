@@ -35,7 +35,7 @@ export default function Header() {
         </nav>
         <div className="hidden md:flex items-center gap-2">
           <Button asChild>
-            <Link href="/signup">إنشاء حساب</Link>
+            <Link href="/signup">ابدأ تجربتك المجانية</Link>
           </Button>
         </div>
 
@@ -66,7 +66,7 @@ export default function Header() {
                 <div className="flex flex-col gap-4 mt-8 pt-4 border-t">
                   <SheetClose asChild>
                     <Button asChild>
-                      <Link href="/signup">إنشاء حساب</Link>
+                      <Link href="/signup">ابدأ تجربتك المجانية</Link>
                     </Button>
                   </SheetClose>
                 </div>
