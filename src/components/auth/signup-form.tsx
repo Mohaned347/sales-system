@@ -23,6 +23,8 @@ import { useState } from "react"
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "يجب أن يتكون الاسم من حرفين على الأقل." }),
+  storeName: z.string().min(2, { message: "يجب أن يتكون اسم المتجر من حرفين على الأقل." }),
+  phone: z.string().min(9, { message: "الرجاء إدخال رقم هاتف صالح." }),
   email: z.string().email({ message: "الرجاء إدخال بريد إلكتروني صالح." }),
   password: z.string().min(8, { message: "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل." }),
 })
@@ -36,6 +38,8 @@ export function SignUpForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      storeName: "",
+      phone: "",
       email: "",
       password: "",
     },
@@ -51,13 +55,13 @@ export function SignUpForm() {
         title: "تم إنشاء الحساب بنجاح!",
         description: "أهلاً بك في مركزي للمبيعات. جاري توجيهك الآن...",
       })
-      router.push('/#demo')
+      router.push('/dashboard')
     }, 1500)
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="name"
@@ -66,6 +70,32 @@ export function SignUpForm() {
               <FormLabel>الاسم الكامل</FormLabel>
               <FormControl>
                 <Input placeholder="مثال: سارة عبدالله" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+         <FormField
+          control={form.control}
+          name="storeName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>اسم المتجر</FormLabel>
+              <FormControl>
+                <Input placeholder="مثال: متجر الأناقة" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>رقم الهاتف</FormLabel>
+              <FormControl>
+                <Input placeholder="مثال: 0912345678" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

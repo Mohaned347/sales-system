@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm, useFieldArray, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -13,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Minus, Trash2, Search, Percent, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Search } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { Separator } from '../ui/separator';
 
@@ -154,151 +155,153 @@ export default function SaleModal({ isOpen, onClose, onSubmit, sale }: SaleModal
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl" dir="rtl">
+            <DialogContent className="w-full h-full flex flex-col sm:h-auto sm:max-h-[90vh] sm:max-w-4xl" dir="rtl">
                 <DialogHeader>
                     <DialogTitle>{sale ? 'تعديل فاتورة' : 'فاتورة بيع جديدة'}</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit(handleFormSubmit)}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[70vh]">
-                    {/* Left side: Item selection and list */}
-                    <div className='flex flex-col gap-4'>
-                        <div className="border rounded-lg p-4 space-y-4">
-                            <h3 className="font-semibold">إضافة منتجات</h3>
-                            <div className="relative">
-                                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    placeholder="بحث بالاسم أو الباركود..."
-                                    className="pr-10"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                <Controller
-                                    control={control}
-                                    name="items"
-                                    render={() => (
-                                        <Select value={selectedProductId} onValueChange={setSelectedProductId}>
-                                            <SelectTrigger className="col-span-3 sm:col-span-2">
-                                                <SelectValue placeholder="اختر منتج" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {filteredProducts.map(p => {
-                                                    const itemInCart = fields.find(i => i.productId === p.id);
-                                                    const availableStock = p.stock - (itemInCart?.quantity || 0);
-                                                    return (
-                                                        <SelectItem key={p.id} value={p.id} disabled={availableStock <= 0 && !itemInCart}>
-                                                            {p.name} ({formatCurrency(p.price)}) - المخزون: {p.stock}
-                                                        </SelectItem>
-                                                    );
-                                                })}
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                />
-                                <Input type="number" value={selectedQuantity} onChange={(e) => setSelectedQuantity(Number(e.target.value))} min={1} />
-                            </div>
-                            <Button type="button" onClick={handleAddItem} className="w-full" disabled={!selectedProductId}>
-                                <Plus className="ml-2 h-4 w-4" /> إضافة للفاتورة
-                            </Button>
-                        </div>
-                        <ScrollArea className="border rounded-lg h-64">
-                            <div className="p-4 space-y-2">
-                            {fields.length === 0 && <p className="text-center text-muted-foreground py-10">لم تتم إضافة منتجات بعد</p>}
-                            {fields.map((item, index) => (
-                                <div key={item.id} className="flex items-center justify-between p-2 bg-muted rounded-md">
-                                    <div>
-                                        <p className="font-medium">{item.name}</p>
-                                        <p className="text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
-                                    </div>
-                                    <div className="flex items-center gap-2">
+                <form onSubmit={handleSubmit(handleFormSubmit)} className="flex-1 flex flex-col overflow-hidden">
+                    <ScrollArea className="flex-1 -m-6 p-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {/* Left side: Item selection and list */}
+                            <div className='flex flex-col gap-4'>
+                                <div className="border rounded-lg p-4 space-y-4 sticky top-0 bg-background/95 backdrop-blur-sm z-10">
+                                    <h3 className="font-semibold">إضافة منتجات</h3>
+                                    <div className="relative">
+                                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                         <Input
-                                            type="number"
-                                            className="w-16 h-8 text-center"
-                                            min={1}
-                                            {...register(`items.${index}.quantity`)}
+                                            placeholder="بحث بالاسم أو الباركود..."
+                                            className="pr-10"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
                                         />
-                                        <Button type="button" variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => remove(index)}>
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-2">
+                                        <Controller
+                                            control={control}
+                                            name="items"
+                                            render={() => (
+                                                <Select value={selectedProductId} onValueChange={setSelectedProductId}>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="اختر منتج" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {filteredProducts.map(p => {
+                                                            const itemInCart = fields.find(i => i.productId === p.id);
+                                                            const availableStock = p.stock - (itemInCart?.quantity || 0);
+                                                            return (
+                                                                <SelectItem key={p.id} value={p.id} disabled={availableStock <= 0 && !itemInCart}>
+                                                                    {p.name} ({formatCurrency(p.price)}) - المخزون: {p.stock}
+                                                                </SelectItem>
+                                                            );
+                                                        })}
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
+                                        />
+                                        <Input type="number" value={selectedQuantity} onChange={(e) => setSelectedQuantity(Number(e.target.value))} min={1} />
+                                    </div>
+                                    <Button type="button" onClick={handleAddItem} className="w-full" disabled={!selectedProductId}>
+                                        <Plus className="ml-2 h-4 w-4" /> إضافة للفاتورة
+                                    </Button>
+                                </div>
+                                <div className="border rounded-lg min-h-[200px]">
+                                    <div className="p-4 space-y-2">
+                                        {fields.length === 0 && <p className="text-center text-muted-foreground py-10">لم تتم إضافة منتجات بعد</p>}
+                                        {fields.map((item, index) => (
+                                            <div key={item.id} className="flex items-center justify-between p-2 bg-muted rounded-md">
+                                                <div>
+                                                    <p className="font-medium">{item.name}</p>
+                                                    <p className="text-sm text-muted-foreground">{formatCurrency(item.price)} x {item.quantity}</p>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Input
+                                                        type="number"
+                                                        className="w-16 h-8 text-center"
+                                                        min={1}
+                                                        {...register(`items.${index}.quantity`)}
+                                                    />
+                                                    <Button type="button" variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => remove(index)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
-                            ))}
+                                {errors.items && <p className="text-destructive text-sm px-4">{errors.items.message || errors.items.root?.message}</p>}
                             </div>
-                        </ScrollArea>
-                        {errors.items && <p className="text-destructive text-sm">{errors.items.message || errors.items.root?.message}</p>}
-                    </div>
 
-                    {/* Right side: Invoice details */}
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                                <Label htmlFor="invoiceNumber">رقم الفاتورة</Label>
-                                <Input id="invoiceNumber" value={sale ? sale.invoiceNumber : 'سيتم إنشاؤه تلقائياً'} readOnly />
-                            </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="date">التاريخ</Label>
-                                <Input id="date" type="date" {...register('date')} />
-                            </div>
-                        </div>
+                            {/* Right side: Invoice details */}
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="invoiceNumber">رقم الفاتورة</Label>
+                                        <Input id="invoiceNumber" value={sale ? sale.invoiceNumber : 'سيتم إنشاؤه تلقائياً'} readOnly />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="date">التاريخ</Label>
+                                        <Input id="date" type="date" {...register('date')} />
+                                    </div>
+                                </div>
 
-                        <Separator />
-                        
-                        <div className="space-y-2 p-4 border rounded-lg">
-                             <div className="flex justify-between"><span>الإجمالي الفرعي</span><span>{formatCurrency(subtotal)}</span></div>
-                             <div className="flex justify-between"><span>الخصم</span><span className="text-destructive">-{formatCurrency(watchedDiscountType === 'percentage' ? subtotal * (watchedDiscount / 100) : watchedDiscount)}</span></div>
-                             <div className="flex justify-between"><span>الضريبة</span><span className="text-green-600">+{formatCurrency(subtotal * (watchedTax / 100))}</span></div>
-                             <Separator />
-                             <div className="flex justify-between font-bold text-lg"><span>الإجمالي</span><span>{formatCurrency(total)}</span></div>
-                        </div>
+                                <Separator />
+                                
+                                <div className="space-y-2 p-4 border rounded-lg bg-muted/50">
+                                    <div className="flex justify-between"><span>الإجمالي الفرعي</span><span>{formatCurrency(subtotal)}</span></div>
+                                    <div className="flex justify-between"><span>الخصم</span><span className="text-destructive">-{formatCurrency(watchedDiscountType === 'percentage' ? subtotal * (watchedDiscount / 100) : watchedDiscount)}</span></div>
+                                    <div className="flex justify-between"><span>الضريبة</span><span className="text-green-600">+{formatCurrency(subtotal * (watchedTax / 100))}</span></div>
+                                    <Separator />
+                                    <div className="flex justify-between font-bold text-lg"><span>الإجمالي</span><span>{formatCurrency(total)}</span></div>
+                                </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                                <Label>الخصم</Label>
-                                <div className="flex">
-                                    <Input type="number" {...register('discount')} />
-                                    <Select value={watchedDiscountType} onValueChange={(val: 'fixed' | 'percentage') => setValue('discountType', val)}>
-                                        <SelectTrigger className="w-[80px] shrink-0">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="fixed">ج.س</SelectItem>
-                                            <SelectItem value="percentage">%</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <Label>الخصم</Label>
+                                        <div className="flex">
+                                            <Input type="number" {...register('discount')} className="rounded-l-none" />
+                                            <Select value={watchedDiscountType} onValueChange={(val: 'fixed' | 'percentage') => setValue('discountType', val)}>
+                                                <SelectTrigger className="w-[80px] shrink-0 rounded-r-none border-r-0">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="fixed">ج.س</SelectItem>
+                                                    <SelectItem value="percentage">%</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="tax">الضريبة (%)</Label>
+                                        <Input id="tax" type="number" {...register('tax')} />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1">
+                                    <Label>طريقة الدفع</Label>
+                                    <Controller
+                                        control={control}
+                                        name="paymentMethod"
+                                        render={({ field }) => (
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="cash">نقدي</SelectItem>
+                                                    <SelectItem value="card">بطاقة</SelectItem>
+                                                    <SelectItem value="bank">تحويل بنكي</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        )}
+                                    />
                                 </div>
                             </div>
-                             <div className="space-y-1">
-                                <Label htmlFor="tax">الضريبة (%)</Label>
-                                <Input id="tax" type="number" {...register('tax')} />
-                            </div>
                         </div>
-
-                        <div className="space-y-1">
-                            <Label>طريقة الدفع</Label>
-                            <Controller
-                                control={control}
-                                name="paymentMethod"
-                                render={({ field }) => (
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="cash">نقدي</SelectItem>
-                                            <SelectItem value="card">بطاقة</SelectItem>
-                                            <SelectItem value="bank">تحويل بنكي</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                )}
-                            />
-                        </div>
-                    </div>
-                </div>
-                <DialogFooter className="mt-4">
-                    <Button type="button" variant="outline" onClick={onClose}>إلغاء</Button>
-                    <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'جاري الحفظ...' : 'حفظ الفاتورة'}</Button>
-                </DialogFooter>
+                    </ScrollArea>
+                    <DialogFooter className="mt-auto p-6 bg-background border-t">
+                        <Button type="button" variant="outline" onClick={onClose}>إلغاء</Button>
+                        <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'جاري الحفظ...' : 'حفظ الفاتورة'}</Button>
+                    </DialogFooter>
                 </form>
             </DialogContent>
         </Dialog>

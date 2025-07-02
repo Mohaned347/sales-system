@@ -15,7 +15,7 @@ export default function SignUpPage() {
       <Card className="w-full max-w-md shadow-xl bg-card">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-headline">أنشئ حسابك الجديد</CardTitle>
-          <CardDescription>ابدأ تجربتك المجانية لمدة 5 أيام اليوم. لا حاجة لبطاقة ائتمان.</CardDescription>
+          <CardDescription>ابدأ تجربتك المجانية. أدخل بياناتك وبيانات متجرك للمتابعة.</CardDescription>
         </CardHeader>
         <CardContent>
           <SignUpForm />
