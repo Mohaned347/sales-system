@@ -20,6 +20,8 @@ import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 import { useState } from "react"
+import { auth, db } from "../../backEnd/firebase" // Adjust the import path if necessary
+import { createUserWithEmailAndPassword } from "firebase/auth"
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "يجب أن يتكون الاسم من حرفين على الأقل." }),
@@ -45,18 +47,38 @@ export function SignUpForm() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true)
-    console.log(values)
-    // Mock API call for registration
-    setTimeout(() => {
-      setIsLoading(false)
+
+    try {
+      // Create user with email and password
+      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const user = userCredential.user;
+
+      // Store additional user data in Firestore
+      await db.collection('users').doc(user.uid).set({
+        name: values.name,
+        storeName: values.storeName,
+        phone: values.phone,
+        email: values.email,
+        createdAt: new Date(),
+      });
+
       toast({
         title: "تم إنشاء الحساب بنجاح!",
-        description: "سيتم توجيهك الآن لصفحة تسجيل الدخول.",
-      })
-      router.push('/login')
-    }, 1500)
+        description: "جارٍ توجيهك إلى لوحة التحكم.",
+      });
+      router.push('/dashboard'); // Redirect to the dashboard route
+      setIsLoading(false)
+    } catch (error: any) {
+      console.error("Error during signup:", error);
+      toast({
+        title: "فشل إنشاء الحساب.",
+        description: error.message || "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
   }
 
   return (

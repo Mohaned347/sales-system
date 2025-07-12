@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import TestimonialForm from './testimonial-form';
+import logo from './photos/image.png'
 
 const FacebookIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -65,7 +66,7 @@ export default function Footer() {
 
         <div className="border-t pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-3">
-             <Image src="https://placehold.co/40x40.png" alt="مبيعاتي Logo" width={40} height={40} className="rounded-md" data-ai-hint="logo" />
+             <Image src={logo} alt="مبيعاتي Logo" width={40} height={40} className="rounded-md" data-ai-hint="logo" />
              <span className="text-2xl font-bold text-foreground">مبيعاتي</span>
           </div>
           <p className="text-sm text-muted-foreground">

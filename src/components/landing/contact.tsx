@@ -2,7 +2,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-
+import team from './photos/team.jpg'
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -63,7 +63,7 @@ export default function Contact() {
               هل لديك أسئلة أو تحتاج إلى دعم؟ املأ النموذج، وسيقوم فريقنا بالرد عليك في أقرب وقت ممكن.
             </p>
             <div className="mt-8">
-                <Image src="https://placehold.co/600x400.png" alt="تواصل مع الدعم" width={600} height={400} className="rounded-lg shadow-lg" data-ai-hint="customer support"/>
+                <Image src={team} alt="تواصل مع الدعم" width={600} height={400} className="rounded-lg shadow-lg" data-ai-hint="customer support"/>
             </div>
           </div>
           <Card className="p-8 shadow-xl">

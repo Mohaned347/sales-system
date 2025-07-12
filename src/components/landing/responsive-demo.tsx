@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import image from './photos/WhatsApp Image 2025-07-02 at 16.51.32_b5b844e0.jpg'
 
 export default function ResponsiveDemo() {
   return (
@@ -15,7 +16,7 @@ export default function ResponsiveDemo() {
           </div>
           <div>
             <Image
-              src="https://placehold.co/1000x600.png"
+              src={image}
               alt="مبيعاتي يعمل على جميع الأجهزة"
               width={1000}
               height={600}

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
 import React from 'react';
+import logo from './photos/image.png'
 
 const navLinks = [
   { href: '#features', label: 'الميزات' },
@@ -19,7 +20,7 @@ export default function Header() {
     <header className="py-4 px-4 sm:px-6 lg:px-8 bg-background/80 backdrop-blur-sm sticky top-0 z-50 border-b">
       <div className="container mx-auto flex justify-between items-center">
         <Link href="/" className="flex items-center gap-3">
-          <Image src="https://placehold.co/40x40.png" alt="مبيعاتي Logo" width={40} height={40} className="rounded-md" data-ai-hint="logo" />
+          <Image src={logo} alt="مبيعاتي Logo" width={40} height={40} className="rounded-md" data-ai-hint="logo" />
           <span className="text-2xl font-bold  font-headline text-foreground">مبيعاتي</span>
         </Link>
         

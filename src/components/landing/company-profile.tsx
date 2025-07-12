@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
+import logo from './photos/montygo.jpg'
 
 const FacebookIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -37,7 +38,7 @@ export default function CompanyProfile() {
           <Card className="shadow-lg overflow-hidden md:grid md:grid-cols-3 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10">
             <div className="md:col-span-1 flex items-center justify-center p-8 bg-primary/5">
                <Image
-                src="https://placehold.co/300x300.png"
+                src={logo}
                 alt="فريق مبيعات"
                 width={200}
                 height={200}
