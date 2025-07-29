@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { FiX, FiPlus, FiMinus, FiTrash2, FiSearch, FiPercent, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
-import { useAppContext } from '../../backEnd/context/AppContext';
+import { useAppContext } from '../../context/app-context';
 import { toast } from 'react-toastify';
 
 

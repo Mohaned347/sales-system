@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../../backEnd/firebase';
+import { db } from '../../../lib/firebase';
 import { FiX, FiFileText, FiDollarSign, FiCalendar, FiChevronLeft, FiChevronRight, FiEye } from 'react-icons/fi';
 import { toast } from 'react-toastify';
-import { useAppContext } from '../../../backEnd/context/AppContext';
+import { useAppContext } from '../../../context/app-context';
 import InvoiceDetailsModal from './InvoiceDetailsModal';
 
 export default function CustomerInvoicesModal({ customer, onClose }) {

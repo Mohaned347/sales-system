@@ -1,14 +1,13 @@
-import { AppProvider } from "@/context/app-context"
-import { DashboardClientLayout } from '@/components/dashboard/client-layout'
+"use client"
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+
+import { AppProvider } from '@/context/app-context'
+import DashboardLayoutInner from '@/components/the-mainsystem/LayoutInner'
+
+export default function DashboardLayout({ children }) {
   return (
     <AppProvider>
-      <DashboardClientLayout>{children}</DashboardClientLayout>
+      <DashboardLayoutInner>{children}</DashboardLayoutInner>
     </AppProvider>
   )
 }

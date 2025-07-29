@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../backEnd/firebase';
+import { auth } from '../../lib/firebase';
+import { useRouter } from 'next/navigation';
 import { FiLogIn } from 'react-icons/fi';
 
 export default function Login() {
@@ -9,14 +9,14 @@ export default function Login() {
   const [password, setPassword] = useState();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate('/');
+      router.push('/');
     } catch (err) {
       setError(err.message);
     }

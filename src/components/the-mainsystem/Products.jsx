@@ -1,7 +1,7 @@
 // --- Products.jsx ---
 import { useState } from 'react';
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiRefreshCw } from 'react-icons/fi';
-import { useAppContext } from '../../backEnd/context/AppContext';
+import { useAppContext } from '../../context/app-context';
 import ProductModal from './ProductModal';
 import { toast } from 'react-toastify';
 
@@ -45,7 +45,7 @@ export default function Products() {
   );
 
   return (
-    <div className="p-4 sm:p-6 max-w-screen-xl mx-auto">
+    <div className="p-4 sm:p-6 w-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold text-blue-800">إدارة المنتجات</h1>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">

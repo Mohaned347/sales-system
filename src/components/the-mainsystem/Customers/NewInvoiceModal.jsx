@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FiX, FiShoppingCart, FiDollarSign, FiFileText,FiUser,FiSearch, FiPercent, FiPlus, FiMinus, FiTrash2 } from 'react-icons/fi';
-import { useAppContext } from '../../../backEnd/context/AppContext';
+import { useAppContext } from '../../../context/app-context';
 import { toast } from 'react-toastify';
 
 export default function NewInvoiceModal({ customer, onClose, onSave }) {

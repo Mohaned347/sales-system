@@ -1,11 +1,11 @@
-
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { useRouter } from "next/navigation"
-
+import { doc, getDoc } from 'firebase/firestore'
+import { useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -19,9 +19,9 @@ import {
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
-import { useState } from "react"
-import { auth, db } from "../../backEnd/firebase" // Adjust the import path if necessary
+import { auth, db } from "../../lib/firebase" // Adjust the import path if necessary
 import { createUserWithEmailAndPassword } from "firebase/auth"
+import { setDoc, serverTimestamp } from "firebase/firestore"
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "يجب أن يتكون الاسم من حرفين على الأقل." }),
@@ -35,6 +35,7 @@ export function SignUpForm() {
   const { toast } = useToast()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [trialDays, setTrialDays] = useState(14)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -47,6 +48,18 @@ export function SignUpForm() {
     },
   })
 
+  useEffect(() => {
+    const fetchTrialDays = async () => {
+      try {
+        const settingsDoc = await getDoc(doc(db, 'settings', 'trial'));
+        if (settingsDoc.exists()) {
+          setTrialDays(settingsDoc.data().totalDays || 14);
+        }
+      } catch (e) {}
+    };
+    fetchTrialDays();
+  }, []);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true)
 
@@ -54,19 +67,61 @@ export function SignUpForm() {
       // Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
+      
+      // Set auth token in cookies
+      const idToken = await user.getIdToken();
+      document.cookie = `token=${idToken}; path=/; max-age=3600; samesite=lax`;
 
-      // Store additional user data in Firestore
-      await db.collection('users').doc(user.uid).set({
+      // Calculate trial period (trialDays from settings)
+      const trialStartDate = new Date();
+      const trialEndDate = new Date();
+      trialEndDate.setDate(trialEndDate.getDate() + trialDays); // trialDays from settings
+
+      // Store additional user data in Firestore with trial period and role
+      await setDoc(doc(db, 'users', user.uid), {
         name: values.name,
         storeName: values.storeName,
         phone: values.phone,
         email: values.email,
-        createdAt: new Date(),
+        role: 'trial_user', // Role for trial period
+        subscriptionStatus: 'trial',
+        trialStartDate: trialStartDate,
+        trialEndDate: trialEndDate,
+        isActive: true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        // Store settings
+        storeData: {
+          storeName: values.storeName,
+          storeAddress: '',
+          storePhone: values.phone,
+          storeWebsite: '',
+          currency: 'SDG',
+          language: 'ar'
+        }
+      });
+
+      // Create initial store data
+      await setDoc(doc(db, 'stores', user.uid), {
+        storeName: values.storeName,
+        ownerId: user.uid,
+        ownerName: values.name,
+        phone: values.phone,
+        email: values.email,
+        createdAt: serverTimestamp(),
+        isActive: true,
+        subscription: {
+          status: 'trial',
+          plan: 'basic',
+          startDate: trialStartDate,
+          endDate: trialEndDate,
+          isActive: true
+        }
       });
 
       toast({
         title: "تم إنشاء الحساب بنجاح!",
-        description: "جارٍ توجيهك إلى لوحة التحكم.",
+        description: "تبدأ فترة تجريبية مجانية لمدة 14 يوم. جارٍ توجيهك إلى لوحة التحكم.",
       });
       router.push('/dashboard'); // Redirect to the dashboard route
       setIsLoading(false)
@@ -153,6 +208,10 @@ export function SignUpForm() {
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           ابدأ تجربتك المجانية الآن
         </Button>
+        <div className="text-center text-sm text-muted-foreground">
+          <p>✓ فترة تجريبية مجانية لمدة {trialDays} يوم</p>
+          <p>✓ لا توجد بطاقة ائتمان مطلوبة</p>
+        </div>
       </form>
     </Form>
   )

@@ -22,6 +22,9 @@ const RatingStars = ({ rating, className }: { rating: number, className?: string
 
 export default function Testimonials() {
   const { testimonials, loading } = useAppContext();
+  
+  console.log('Testimonials component - loading:', loading);
+  console.log('Testimonials component - testimonials:', testimonials);
 
   return (
     <section id="testimonials" className="py-20 md:py-28 bg-background">
@@ -79,7 +82,10 @@ export default function Testimonials() {
               </Card>
             ))
           ) : (
-            <p className='text-center col-span-3 text-muted-foreground'>لا توجد آراء متاحة حالياً.</p>
+            <div className='text-center col-span-3'>
+              <p className='text-muted-foreground mb-4'>لا توجد آراء معتمدة حالياً.</p>
+              <p className='text-sm text-muted-foreground'>كن أول من يشارك تجربته مع مبيعاتي!</p>
+            </div>
           )}
         </div>
       </div>

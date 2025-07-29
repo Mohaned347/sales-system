@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
-import { useAppContext } from '../../backEnd/context/AppContext';
+import { useAppContext } from '../../context/app-context';
 import { FiSave, FiUser, FiLock, FiMail, FiHome, FiPhone, FiGlobe } from 'react-icons/fi';
 import { sendPasswordResetEmail, updateProfile, updateEmail, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore'; // تغيير من updateDoc إلى setDoc
-import { auth, db } from '../../backEnd/firebase';
+import { auth, db } from '../../lib/firebase';
 import { toast } from 'react-toastify';
 import Modal from 'react-modal';
 
-Modal.setAppElement('#root');
+// إعداد Modal لـ Next.js
+if (typeof window !== 'undefined') {
+  Modal.setAppElement(document.body);
+}
 
 // أنماط المودال
 const customStyles = {

@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FiMessageSquare, FiPhone, FiUser, FiMail, FiPlus, FiX } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
-import { db } from '../../backEnd/firebase';
-import { collection, addDoc } from 'firebase/firestore';
-import { useAppContext } from '../../backEnd/context/AppContext';
+import { db } from '../../lib/firebase';
+import { collection, addDoc, doc, getDoc } from 'firebase/firestore';
+import { useAppContext } from '../../context/app-context';
 
 export default function CustomerService() {
   const { user } = useAppContext();
@@ -17,6 +17,7 @@ export default function CustomerService() {
   const [showAdditionalPhone, setShowAdditionalPhone] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [contactInfo, setContactInfo] = useState({ storePhone: '', storeAddress: '', storeEmail: '' });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -56,6 +57,22 @@ export default function CustomerService() {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    const fetchContact = async () => {
+      try {
+        const contactDoc = await getDoc(doc(db, 'settings', 'contact'));
+        if (contactDoc.exists()) {
+          setContactInfo({
+            storePhone: contactDoc.data().storePhone || '',
+            storeAddress: contactDoc.data().storeAddress || '',
+            storeEmail: contactDoc.data().storeEmail || '',
+          });
+        }
+      } catch (e) {}
+    };
+    fetchContact();
+  }, []);
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md relative" dir='rtl'>
@@ -236,11 +253,11 @@ export default function CustomerService() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-gray-50 p-4 rounded-lg">
             <h4 className="font-medium text-yellow-600 mb-2">البريد الإلكتروني</h4>
-            <p className="text-gray-600">support@montygo.com</p>
+            <p className="text-gray-600">{contactInfo.storeEmail}</p>
           </div>
           <div className="bg-gray-50 p-4 rounded-lg">
             <h4 className="font-medium text-yellow-600 mb-2">الهاتف</h4>
-            <p className="text-gray-600" dir='ltr'>+966 12 345 6789</p>
+            <p className="text-gray-600" dir='ltr'>{contactInfo.storePhone}</p>
           </div>
           <div className="bg-gray-50 p-4 rounded-lg">
             <h4 className="font-medium text-yellow-600 mb-2">ساعات العمل</h4>

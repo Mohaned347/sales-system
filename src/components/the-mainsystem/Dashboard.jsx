@@ -1,10 +1,12 @@
+'use client';
+
 import { useState, useEffect } from 'react';
-import { useAppContext } from '../../backEnd/context/AppContext';
+import { useAppContext } from '../../context/app-context';
 import { FiTrendingUp, FiPackage, FiShoppingCart, FiCalendar, FiPieChart, FiBarChart2 } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
-import montygoLogo from '../assets/WhatsApp Image 2025-01-16 at 22.17.38_bb6deaba.jpg';
+import montygoLogo from './assets/WhatsApp Image 2025-01-16 at 22.17.38_bb6deaba.jpg';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
@@ -125,9 +127,6 @@ export default function Dashboard() {
           <p className="text-gray-600">
             مرحباً بعودتك، <span className="font-medium text-yellow-600">{user.displayName || user.email.split('@')[0]}</span>
           </p>
-          <span className="bg-gray-100 px-3 py-1 rounded-full text-sm font-medium">
-            الخطة: أساسي
-          </span>
         </div>
       )}
     </div>
@@ -156,7 +155,7 @@ export default function Dashboard() {
             التحليلات والتقارير
           </h2>
           <Link 
-            to="/analytics" 
+            href="/dashboard/analytics" 
             className="text-sm text-yellow-600 hover:underline flex items-center gap-1"
           >
             عرض التفاصيل
@@ -345,7 +344,7 @@ export default function Dashboard() {
         <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">آخر المبيعات</h2>
-            <Link to="/sales" className="text-sm text-yellow-600 hover:underline">عرض الكل</Link>
+            <Link href="/dashboard/sales" className="text-sm text-yellow-600 hover:underline">عرض الكل</Link>
           </div>
           <div className="space-y-3">
             {sales.slice(0, 5).map(sale => (
@@ -369,7 +368,7 @@ export default function Dashboard() {
 <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm">
   <div className="flex items-center justify-between mb-4">
     <h2 className="text-lg font-semibold">المنتجات حسب الكمية في المخزون</h2>
-    <Link to="/products" className="text-sm text-yellow-600 hover:underline">عرض الكل</Link>
+    <Link href="/dashboard/products" className="text-sm text-yellow-600 hover:underline">عرض الكل</Link>
   </div>
   
   {/* مفتاح الألوان */}

@@ -1,23 +1,23 @@
+"use client";
+
 import { useState, useEffect } from 'react';
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiRefreshCw, FiCornerUpLeft, FiEye, FiArchive } from 'react-icons/fi';
-import { useAppContext } from '../../backEnd/context/AppContext';
 import SaleModal from './SaleModal';
 import ReturnModal from './ReturnProductModal';
 import SaleDetailsModal from './SaleDetailsModal';
 import { toast } from 'react-toastify';
 
-export default function Sales() {
-  const { 
-    sales, 
-    loading, 
-    addSale, 
-    updateSale, 
-    deleteSale, 
-    returnProduct, 
-    refreshData,
-    getProductById,
-    deletedProducts
-  } = useAppContext();
+export default function Sales({ 
+  sales = [], // Default empty array if undefined
+  loading, 
+  addSale, 
+  updateSale, 
+  deleteSale, 
+  returnProduct, 
+  refreshData,
+  getProductById,
+  deletedProducts = []
+}) {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
@@ -28,10 +28,10 @@ export default function Sales() {
   const [showDeletedProducts, setShowDeletedProducts] = useState(false);
 
   useEffect(() => {
-    if (sales.length === 0) {
+    if (sales.length === 0 && typeof refreshData === 'function') {
       refreshData();
     }
-  }, []);
+  }, [sales.length, refreshData]);
 
   const handleSubmitSale = async (saleData) => {
     try {
@@ -87,8 +87,9 @@ export default function Sales() {
     return new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'SDG' }).format(amount || 0);
   };
 
-  const filteredSales = sales.filter(sale => {
-    // Check if any item in this sale matches the search term
+  const filteredSales = (sales || []).filter(sale => {
+    if (!sale.items) return false;
+    
     const hasMatchingItem = sale.items.some(item => {
       const product = getProductById(item.productId);
       const productName = product?.name || item.name || 'منتج غير معروف';
@@ -98,7 +99,6 @@ export default function Sales() {
       );
     });
     
-    // Check if we should show deleted products
     const hasDeletedItems = sale.items.some(item => {
       const product = getProductById(item.productId);
       return !product?.name || product.name === 'منتج غير موجود';
@@ -108,6 +108,7 @@ export default function Sales() {
   });
 
   const getProductNames = (sale) => {
+    if (!sale.items) return 'لا توجد منتجات';
     return sale.items.map(item => {
       const product = getProductById(item.productId);
       const name = product?.name || item.name || 'منتج محذوف';
@@ -116,14 +117,17 @@ export default function Sales() {
   };
 
   const getTotalItems = (sale) => {
-    return sale.items.reduce((sum, item) => sum + item.quantity, 0);
+    if (!sale.items) return 0;
+    return sale.items.reduce((sum, item) => sum + (item.quantity || 0), 0);
   };
 
   const getTotalPrice = (sale) => {
-    return sale.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    if (!sale.items) return 0;
+    return sale.items.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
   };
 
   const hasReturnableItems = (sale) => {
+    if (!sale.items) return false;
     return sale.items.some(item => {
       const maxReturnable = item.quantity - (sale.returns?.reduce((sum, r) => 
         r.productId === item.productId ? sum + r.quantity : sum, 0) || 0);
@@ -132,7 +136,7 @@ export default function Sales() {
   };
 
   return (
-    <div className="p-4 sm:p-6 max-w-screen-2xl mx-auto" dir="rtl">
+    <div className="p-4 sm:p-6 w-full" dir="rtl">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-yellow-700">إدارة المبيعات</h1>
@@ -201,7 +205,7 @@ export default function Sales() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredSales.length > 0 ? (
                   filteredSales.map((sale) => {
-                    const hasDeletedItems = sale.items.some(item => {
+                    const hasDeletedItems = sale.items?.some(item => {
                       const product = getProductById(item.productId);
                       return !product?.name || product.name === 'منتج غير موجود';
                     });

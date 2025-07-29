@@ -5,9 +5,9 @@ import {
 } from 'react-icons/fi';
 import { useRef, forwardRef, useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../backEnd/firebase';
+import { db } from '../../lib/firebase';
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet"></link>
-import ventasLogo from '../assets/Untitled (10).png';
+import ventasLogo from './assets/Untitled (10).png';
 const PrintableInvoice = forwardRef(({ sale, products, storeData, user }, ref) => {
   const subtotal = sale.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const taxAmount = subtotal * ((sale.tax || 0) / 100);

@@ -1,11 +1,11 @@
-import { useState, useMemo } from 'react';
-import { FiTrendingUp, FiPackage, FiShoppingCart, FiCalendar, FiPieChart, FiBarChart2, FiDownload, FiStar, FiAward } from 'react-icons/fi';
+import { useState, useMemo, useCallback } from 'react';
+import { FiTrendingUp, FiPackage, FiShoppingCart, FiCalendar, FiPieChart, FiBarChart2, FiDownload, FiStar, FiAward, FiRefreshCw, FiFilter } from 'react-icons/fi';
 import { Bar, Pie, Line, Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement } from 'chart.js';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
-import { useAppContext } from '../../backEnd/context/AppContext';
-import { Link } from 'react-router-dom';
+import { useAppContext } from '../../context/app-context';
+import Link from 'next/link';
 
 ChartJS.register(
   CategoryScale,
@@ -20,21 +20,26 @@ ChartJS.register(
 );
 
 export default function Analytics() {
-  const { sales, products, getSalesAnalytics, getInventoryReport } = useAppContext();
+  const { sales, products, getSalesAnalytics, getInventoryReport, getCustomerAnalytics } = useAppContext();
   const [activeTab, setActiveTab] = useState('sales');
   const [period, setPeriod] = useState('daily');
+  const [isExporting, setIsExporting] = useState(false);
   
-  // تحليل المبيعات
-  const dailyAnalytics = getSalesAnalytics('daily');
-  const monthlyAnalytics = getSalesAnalytics('monthly');
-  const yearlyAnalytics = getSalesAnalytics('yearly');
-  
-  // تحليل المخزون
-  const inventoryReport = getInventoryReport();
-  const inventoryProducts = inventoryReport.products || [];
-  
-  // تحليل المنتجات الأكثر مبيعًا (جديد)
-  const productAnalysis = useMemo(() => {
+  // تحسين الأداء باستخدام useMemo
+  const analyticsData = useMemo(() => {
+    // تحليل المبيعات
+    const dailyAnalytics = getSalesAnalytics('daily');
+    const monthlyAnalytics = getSalesAnalytics('monthly');
+    const yearlyAnalytics = getSalesAnalytics('yearly');
+    
+    // تحليل المخزون
+    const inventoryReport = getInventoryReport();
+    const inventoryProducts = inventoryReport.products || [];
+    
+    // تحليل العملاء
+    const customerAnalytics = getCustomerAnalytics();
+    
+    // تحليل المنتجات الأكثر مبيعًا
     const productMap = {};
     
     sales.forEach(sale => {
@@ -62,543 +67,452 @@ export default function Analytics() {
     const productArray = Object.values(productMap);
     
     return {
-      topSellingByQuantity: [...productArray].sort((a, b) => b.totalSold - a.totalSold).slice(0, 5),
-      topSellingByRevenue: [...productArray].sort((a, b) => b.totalRevenue - a.totalRevenue).slice(0, 5),
-      recentlySold: [...productArray].filter(p => p.lastSold).sort((a, b) => b.lastSold - a.lastSold).slice(0, 5),
-      allProducts: productArray
+      sales: {
+        daily: dailyAnalytics,
+        monthly: monthlyAnalytics,
+        yearly: yearlyAnalytics
+      },
+      inventory: {
+        report: inventoryReport,
+        products: inventoryProducts
+      },
+      customers: customerAnalytics,
+      products: {
+        topSellingByQuantity: [...productArray].sort((a, b) => b.totalSold - a.totalSold).slice(0, 5),
+        topSellingByRevenue: [...productArray].sort((a, b) => b.totalRevenue - a.totalRevenue).slice(0, 5),
+        recentlySold: [...productArray].filter(p => p.lastSold).sort((a, b) => b.lastSold - a.lastSold).slice(0, 5),
+        allProducts: productArray
+      }
     };
-  }, [sales, products]);
+  }, [sales, products, getSalesAnalytics, getInventoryReport, getCustomerAnalytics]);
 
-  const formatNumber = (num) => {
+  const formatNumber = useCallback((num) => {
     return new Intl.NumberFormat('ar-EG').format(num || 0);
-  };
+  }, []);
 
-  const formatCurrency = (num) => {
+  const formatCurrency = useCallback((num) => {
     return new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'SDG' }).format(num || 0);
-  };
+  }, []);
 
-  const formatDate = (date) => {
+  const formatDate = useCallback((date) => {
     return date ? new Date(date).toLocaleDateString('ar-EG') : 'غير معروف';
-  };
+  }, []);
 
-  const exportToExcel = () => {
-    let data = [];
-    
-    if (activeTab === 'sales') {
-      data = (period === 'daily' ? dailyAnalytics.salesData : 
-              period === 'monthly' ? monthlyAnalytics.salesData : 
-              yearlyAnalytics.salesData).map(sale => ({
-        'رقم الفاتورة': sale.invoiceNumber || 'غير معروف',
-        'التاريخ': formatDate(sale.date),
-        'العميل': sale.customerName || 'غير معروف',
-        'الكمية': sale.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0,
-        'الإجمالي': sale.total || 0,
-        'طريقة الدفع': sale.paymentMethod || 'نقدي'
-      }));
-    } else if (activeTab === 'inventory') {
-      data = inventoryProducts.map(product => ({
-        'اسم المنتج': product.name || 'غير معروف',
-        'التصنيف': product.category || 'غير معروف',
-        'السعر': formatCurrency(product.price),
-        'المخزون': product.stock || 0,
-        'القيمة': formatCurrency((product.price || 0) * (product.stock || 0)),
-        'الحالة': product.stock <= 0 ? 'منتهي' : product.stock < 10 ? 'منخفض' : 'متوفر',
-        'تاريخ آخر حركة': product.lastSold ? formatDate(product.lastSold) : 'غير معروف'
-      }));
-    } else if (activeTab === 'products') {
-      data = productAnalysis.allProducts.map(product => ({
-        'اسم المنتج': product.name,
-        'التصنيف': product.category,
-        'السعر': formatCurrency(product.price),
-        'الكمية المباعة': product.totalSold,
-        'إجمالي الإيرادات': formatCurrency(product.totalRevenue),
-        'تاريخ آخر بيع': formatDate(product.lastSold)
-      }));
+  const exportToExcel = useCallback(async () => {
+    setIsExporting(true);
+    try {
+      let data = [];
+      
+      if (activeTab === 'sales') {
+        const currentAnalytics = analyticsData.sales[period];
+        data = currentAnalytics.salesData.map(sale => ({
+          'رقم الفاتورة': sale.invoiceNumber || 'غير معروف',
+          'التاريخ': formatDate(sale.date),
+          'العميل': sale.customerName || 'غير معروف',
+          'الكمية': sale.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0,
+          'الإجمالي': sale.total || 0,
+          'طريقة الدفع': sale.paymentMethod || 'نقدي'
+        }));
+      } else if (activeTab === 'inventory') {
+        data = analyticsData.inventory.products.map(product => ({
+          'اسم المنتج': product.name || 'غير معروف',
+          'التصنيف': product.category || 'غير معروف',
+          'السعر': formatCurrency(product.price),
+          'المخزون': product.stock || 0,
+          'القيمة': formatCurrency((product.price || 0) * (product.stock || 0)),
+          'الحالة': product.stock <= 0 ? 'منتهي' : product.stock < 10 ? 'منخفض' : 'متوفر',
+          'تاريخ آخر حركة': product.lastSold ? formatDate(product.lastSold) : 'غير معروف'
+        }));
+      } else if (activeTab === 'customers') {
+        data = analyticsData.customers.customerStats.map(customer => ({
+          'اسم العميل': customer.name,
+          'الهاتف': customer.phone,
+          'إجمالي المشتريات': formatCurrency(customer.totalSpent),
+          'عدد الطلبات': customer.purchaseCount,
+          'آخر شراء': formatDate(customer.lastPurchase)
+        }));
+      } else if (activeTab === 'products') {
+        data = analyticsData.products.allProducts.map(product => ({
+          'اسم المنتج': product.name,
+          'التصنيف': product.category,
+          'السعر': formatCurrency(product.price),
+          'الكمية المباعة': product.totalSold,
+          'إجمالي الإيرادات': formatCurrency(product.totalRevenue),
+          'تاريخ آخر بيع': formatDate(product.lastSold)
+        }));
+      }
+      
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "التقرير");
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      saveAs(blob, `تقرير_${activeTab === 'sales' ? 'المبيعات' : activeTab === 'inventory' ? 'المخزون' : activeTab === 'customers' ? 'العملاء' : 'المنتجات'}.xlsx`);
+    } catch (error) {
+      console.error('Error exporting data:', error);
+    } finally {
+      setIsExporting(false);
     }
+  }, [activeTab, period, analyticsData, formatDate, formatCurrency]);
+
+  // رسوم بيانية محسنة
+  const chartData = useMemo(() => {
+    const currentSales = analyticsData.sales[period];
     
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "التقرير");
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    saveAs(blob, `تقرير_${activeTab === 'sales' ? 'المبيعات' : activeTab === 'inventory' ? 'المخزون' : 'المنتجات'}.xlsx`);
-  };
-
-  // رسوم بيانية للمبيعات
-  const salesChartData = {
-    labels: ['يومي', 'شهري', 'سنوي'],
-    datasets: [
-      {
-        label: 'إجمالي المبيعات',
-        data: [
-          dailyAnalytics.totalSales,
-          monthlyAnalytics.totalSales,
-          yearlyAnalytics.totalSales
-        ],
-        backgroundColor: [
-          'rgba(59, 130, 246, 0.7)',
-          'rgba(139, 92, 246, 0.7)',
-          'rgba(16, 185, 129, 0.7)'
-        ],
-        borderColor: [
-          'rgba(59, 130, 246, 1)',
-          'rgba(139, 92, 246, 1)',
-          'rgba(16, 185, 129, 1)'
-        ],
-        borderWidth: 1,
+    return {
+      sales: {
+        labels: ['يومي', 'شهري', 'سنوي'],
+        datasets: [{
+          label: 'إجمالي المبيعات',
+          data: [
+            analyticsData.sales.daily.totalSales,
+            analyticsData.sales.monthly.totalSales,
+            analyticsData.sales.yearly.totalSales
+          ],
+          backgroundColor: [
+            'rgba(59, 130, 246, 0.7)',
+            'rgba(139, 92, 246, 0.7)',
+            'rgba(16, 185, 129, 0.7)'
+          ],
+          borderColor: [
+            'rgba(59, 130, 246, 1)',
+            'rgba(139, 92, 246, 1)',
+            'rgba(16, 185, 129, 1)'
+          ],
+          borderWidth: 1,
+        }],
       },
-    ],
-  };
-
-  // رسوم بيانية للمخزون
-  const inventoryPieData = {
-    labels: ['متوفر', 'منخفض', 'منتهي'],
-    datasets: [
-      {
-        data: [
-          inventoryReport.inStock || 0,
-          inventoryReport.lowStock || 0,
-          inventoryReport.outOfStock || 0
-        ],
-        backgroundColor: [
-          'rgba(16, 185, 129, 0.7)',
-          'rgba(234, 179, 8, 0.7)',
-          'rgba(239, 68, 68, 0.7)'
-        ],
-        borderColor: [
-          'rgba(16, 185, 129, 1)',
-          'rgba(234, 179, 8, 1)',
-          'rgba(239, 68, 68, 1)'
-        ],
-        borderWidth: 1,
+      inventory: {
+        labels: ['متوفر', 'منخفض', 'منتهي'],
+        datasets: [{
+          data: [
+            analyticsData.inventory.report.inStock || 0,
+            analyticsData.inventory.report.lowStock || 0,
+            analyticsData.inventory.report.outOfStock || 0
+          ],
+          backgroundColor: [
+            'rgba(16, 185, 129, 0.7)',
+            'rgba(234, 179, 8, 0.7)',
+            'rgba(239, 68, 68, 0.7)'
+          ],
+          borderColor: [
+            'rgba(16, 185, 129, 1)',
+            'rgba(234, 179, 8, 1)',
+            'rgba(239, 68, 68, 1)'
+          ],
+          borderWidth: 1,
+        }],
       },
-    ],
-  };
+      products: {
+        topSelling: {
+          labels: analyticsData.products.topSellingByQuantity.map(p => p.name),
+          datasets: [{
+            label: 'الكمية المباعة',
+            data: analyticsData.products.topSellingByQuantity.map(p => p.totalSold),
+            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+            borderColor: 'rgba(59, 130, 246, 1)',
+            borderWidth: 1,
+          }],
+        },
+        revenue: {
+          labels: analyticsData.products.topSellingByRevenue.map(p => p.name),
+          datasets: [{
+            label: 'إجمالي الإيرادات',
+            data: analyticsData.products.topSellingByRevenue.map(p => p.totalRevenue),
+            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+            borderColor: 'rgba(16, 185, 129, 1)',
+            borderWidth: 1,
+          }],
+        }
+      }
+    };
+  }, [analyticsData, period]);
 
-  // رسوم بيانية للمنتجات (جديد)
-  const topProductsChartData = {
-    labels: productAnalysis.topSellingByQuantity.map(p => p.name),
-    datasets: [
-      {
-        label: 'الكمية المباعة',
-        data: productAnalysis.topSellingByQuantity.map(p => p.totalSold),
-        backgroundColor: 'rgba(59, 130, 246, 0.7)',
-        borderColor: 'rgba(59, 130, 246, 1)',
-        borderWidth: 1,
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+        rtl: true,
+        labels: {
+          font: {
+            family: 'Tajawal, sans-serif'
+          },
+          usePointStyle: true,
+          padding: 20
+        }
       },
-    ],
-  };
-
-  const revenueProductsChartData = {
-    labels: productAnalysis.topSellingByRevenue.map(p => p.name),
-    datasets: [
-      {
-        label: 'إجمالي الإيرادات',
-        data: productAnalysis.topSellingByRevenue.map(p => p.totalRevenue),
-        backgroundColor: 'rgba(16, 185, 129, 0.7)',
-        borderColor: 'rgba(16, 185, 129, 1)',
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  const monthlySalesData = {
-    labels: Array.from({ length: 12 }, (_, i) => {
-      const date = new Date();
-      date.setMonth(i);
-      return date.toLocaleString('ar-EG', { month: 'long' });
-    }),
-    datasets: [
-      {
-        label: 'المبيعات الشهرية',
-        data: Array.from({ length: 12 }, (_, i) => {
-          const monthSales = sales.filter(s => {
-            const saleDate = s.date ? new Date(s.date) : null;
-            return saleDate && saleDate.getMonth() === i && saleDate.getFullYear() === new Date().getFullYear();
-          });
-          return monthSales.reduce((sum, s) => sum + (s.total || 0), 0);
-        }),
-        borderColor: 'rgba(234, 179, 8, 1)',
-        backgroundColor: 'rgba(234, 179, 8, 0.2)',
-        tension: 0.3,
-      },
-    ],
-  };
-
-  const renderInventoryProducts = () => {
-    if (!inventoryProducts || inventoryProducts.length === 0) {
-      return (
-        <div className="mt-6 bg-white rounded-lg shadow p-4">
-          <p className="text-gray-500 text-center">لا توجد منتجات في المخزون</p>
-        </div>
-      );
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const label = context.label || '';
+            const value = context.raw || 0;
+            if (activeTab === 'inventory') {
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = Math.round((value / total) * 100);
+              return `${label}: ${value} (${percentage}%)`;
+            }
+            return `${label}: ${formatNumber(value)}`;
+          }
+        }
+      }
     }
-
-    return (
-      <div className="mt-6 bg-white rounded-lg shadow overflow-hidden">
-        <h3 className="p-4 font-medium border-b">تفاصيل المخزون</h3>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">اسم المنتج</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">التصنيف</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">السعر</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">المخزون</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">القيمة</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">الحالة</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">آخر حركة</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {inventoryProducts.map((product) => (
-                <tr key={product.id || product.name} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{product.name || 'غير معروف'}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm">{product.category || 'غير معروف'}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm">{formatCurrency(product.price)}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm">{product.stock || 0}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-yellow-600">
-                    {formatCurrency((product.price || 0) * (product.stock || 0))}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm">
-                    {product.stock <= 0 ? (
-                      <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">منتهي</span>
-                    ) : product.stock < 10 ? (
-                      <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">منخفض</span>
-                    ) : (
-                      <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">متوفر</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm">
-                    {product.lastSold ? formatDate(product.lastSold) : 'لا يوجد'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
-  };
-
-  const renderProductAnalysis = () => {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white p-4 rounded-lg shadow">
-            <p className="text-gray-500">إجمالي المنتجات</p>
-            <h3 className="text-2xl font-bold">{formatNumber(products.length)}</h3>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <p className="text-gray-500">المنتجات المباعة</p>
-            <h3 className="text-2xl font-bold">{formatNumber(productAnalysis.allProducts.length)}</h3>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <p className="text-gray-500">إجمالي الإيرادات</p>
-            <h3 className="text-2xl font-bold">
-              {formatCurrency(productAnalysis.allProducts.reduce((sum, p) => sum + p.totalRevenue, 0))}
-            </h3>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white p-4 rounded-lg shadow">
-            <h3 className="font-medium mb-4 flex items-center gap-2">
-              <FiAward className="text-yellow-600" />
-              أفضل 5 منتجات من حيث الكمية المباعة
-            </h3>
-            <div className="h-80">
-              <Bar 
-                data={topProductsChartData} 
-                options={{ 
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      display: false
-                    },
-                  },
-                }} 
-              />
-            </div>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <h3 className="font-medium mb-4 flex items-center gap-2">
-              <FiStar className="text-yellow-600" />
-              أفضل 5 منتجات من حيث الإيرادات
-            </h3>
-            <div className="h-80">
-              <Bar 
-                data={revenueProductsChartData} 
-                options={{ 
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      display: false
-                    },
-                  },
-                }} 
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <h3 className="p-4 font-medium border-b">تفاصيل أداء المنتجات</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">الترتيب</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">اسم المنتج</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">التصنيف</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">الكمية المباعة</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">إجمالي الإيرادات</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">آخر بيع</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {productAnalysis.allProducts
-                  .sort((a, b) => b.totalRevenue - a.totalRevenue)
-                  .map((product, index) => (
-                    <tr key={product.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{index + 1}</td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{product.name}</td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm">{product.category}</td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm">{formatNumber(product.totalSold)}</td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-green-600">
-                        {formatCurrency(product.totalRevenue)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm">
-                        {product.lastSold ? formatDate(product.lastSold) : 'لا يوجد'}
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
   };
 
   return (
-    <div className="p-4 md:p-6" dir="rtl">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <FiBarChart2 className="text-yellow-600" />
-          التحليلات والتقارير المتكاملة
-        </h1>
-        <div className="flex gap-2">
-          <button 
+    <div className="p-4 md:p-6 bg-gray-50 min-h-screen" dir="rtl">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">التقارير والتحليلات</h1>
+          <p className="text-sm text-gray-500">تحليل شامل لأداء المتجر والمبيعات</p>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <button
             onClick={exportToExcel}
-            className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
-            title="تصدير إلى إكسل"
+            disabled={isExporting}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
           >
-            <FiDownload size={20} />
+            {isExporting ? (
+              <FiRefreshCw className="animate-spin" />
+            ) : (
+              <FiDownload />
+            )}
+            <span>{isExporting ? 'جاري التصدير...' : 'تصدير Excel'}</span>
           </button>
-          <Link 
-            to="/" 
-            className="p-2 text-gray-600 hover:bg-gray-100 rounded-full"
-          >
-            <FiCalendar size={20} />
-          </Link>
         </div>
       </div>
 
-      <div className="flex border-b border-gray-200 mb-6">
-        <button
-          className={`px-4 py-2 font-medium ${activeTab === 'sales' ? 'text-yellow-600 border-b-2 border-yellow-600' : 'text-gray-500'}`}
-          onClick={() => setActiveTab('sales')}
-        >
-          <FiTrendingUp className="inline mr-2" />
-          تحليل المبيعات
-        </button>
-        <button
-          className={`px-4 py-2 font-medium ${activeTab === 'inventory' ? 'text-yellow-600 border-b-2 border-yellow-600' : 'text-gray-500'}`}
-          onClick={() => setActiveTab('inventory')}
-        >
-          <FiPackage className="inline mr-2" />
-          تقرير المخزون
-        </button>
-        <button
-          className={`px-4 py-2 font-medium ${activeTab === 'products' ? 'text-yellow-600 border-b-2 border-yellow-600' : 'text-gray-500'}`}
-          onClick={() => setActiveTab('products')}
-        >
-          <FiShoppingCart className="inline mr-2" />
-          أداء المنتجات
-        </button>
+      {/* Tabs */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-1 mb-6">
+        <div className="flex space-x-1">
+          {[
+            { id: 'sales', name: 'المبيعات', icon: FiTrendingUp },
+            { id: 'inventory', name: 'المخزون', icon: FiPackage },
+            { id: 'customers', name: 'العملاء', icon: FiShoppingCart },
+            { id: 'products', name: 'المنتجات', icon: FiBarChart2 }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === tab.id
+                  ? 'bg-yellow-100 text-yellow-700'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <tab.icon size={16} />
+              {tab.name}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {activeTab === 'sales' ? (
-        <div>
-          <div className="flex gap-2 mb-6">
-            {['daily', 'monthly', 'yearly'].map((p) => (
-              <button
-                key={p}
-                onClick={() => setPeriod(p)}
-                className={`px-4 py-2 rounded-lg ${
-                  period === p
-                    ? 'bg-yellow-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                {p === 'daily' && 'يومي'}
-                {p === 'monthly' && 'شهري'}
-                {p === 'yearly' && 'سنوي'}
-              </button>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-gray-500">إجمالي المبيعات</p>
-              <h3 className="text-2xl font-bold">
-                {formatCurrency(
-                  period === 'daily' 
-                    ? dailyAnalytics.totalSales 
-                    : period === 'monthly' 
-                      ? monthlyAnalytics.totalSales 
-                      : yearlyAnalytics.totalSales
-                )}
-              </h3>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-gray-500">عدد الفواتير</p>
-              <h3 className="text-2xl font-bold">
-                {formatNumber(
-                  period === 'daily' 
-                    ? dailyAnalytics.salesCount 
-                    : period === 'monthly' 
-                      ? monthlyAnalytics.salesCount 
-                      : yearlyAnalytics.salesCount
-                )}
-              </h3>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-gray-500">متوسط الفاتورة</p>
-              <h3 className="text-2xl font-bold">
-                {formatCurrency(
-                  period === 'daily' 
-                    ? dailyAnalytics.avgSale 
-                    : period === 'monthly' 
-                      ? monthlyAnalytics.avgSale 
-                      : yearlyAnalytics.avgSale
-                )}
-              </h3>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white p-4 rounded-lg shadow">
-              <h3 className="font-medium mb-4">مقارنة المبيعات</h3>
-              <div className="h-80">
-                <Bar 
-                  data={salesChartData} 
-                  options={{ 
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        display: false
-                      },
-                    },
-                  }} 
-                />
-              </div>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <h3 className="font-medium mb-4">المبيعات الشهرية للسنة الحالية</h3>
-              <div className="h-80">
-                <Line 
-                  data={monthlySalesData} 
-                  options={{ 
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        display: false
-                      },
-                    },
-                  }} 
-                />
-              </div>
+      {/* Period Selector for Sales */}
+      {activeTab === 'sales' && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-gray-700">الفترة الزمنية:</span>
+            <div className="flex bg-gray-200 rounded-lg overflow-hidden">
+              {['daily', 'monthly', 'yearly'].map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPeriod(p)}
+                  className={`px-4 py-2 text-sm transition-colors ${
+                    period === p
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  {p === 'daily' ? 'يومي' : p === 'monthly' ? 'شهري' : 'سنوي'}
+                </button>
+              ))}
             </div>
           </div>
         </div>
-      ) : activeTab === 'inventory' ? (
-        <div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-gray-500">إجمالي قيمة المخزون</p>
-              <h3 className="text-2xl font-bold">{formatCurrency(inventoryReport.totalStockValue)}</h3>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-gray-500">منخفض المخزون</p>
-              <h3 className="text-2xl font-bold text-yellow-600">{inventoryReport.lowStock || 0}</h3>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-gray-500">منتهي المخزون</p>
-              <h3 className="text-2xl font-bold text-red-600">{inventoryReport.outOfStock || 0}</h3>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white p-4 rounded-lg shadow">
-              <h3 className="font-medium mb-4">حالة المخزون</h3>
-              <div className="h-80">
-                <Pie 
-                  data={inventoryPieData} 
-                  options={{ 
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        position: 'right',
-                        rtl: true,
-                      },
-                    },
-                  }} 
-                />
-              </div>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-  <h3 className="font-medium mb-4">توزيع المخزون حسب التصنيف</h3>
-  <div className="h-80">
-    <Doughnut 
-      data={{
-        labels: [...new Set(inventoryProducts.map(p => p.category || 'غير معروف'))],
-        datasets: [{
-          label: 'الكمية في المخزون',
-          data: [...new Set(inventoryProducts.map(p => p.category || 'غير معروف'))]
-            .map(cat => inventoryProducts
-              .filter(p => (p.category || 'غير معروف') === cat)
-              .reduce((sum, p) => sum + (p.stock || 0), 0)
-            ),
-          backgroundColor: [
-            'rgba(59, 130, 246, 0.7)',
-            'rgba(16, 185, 129, 0.7)',
-            'rgba(234, 179, 8, 0.7)',
-            'rgba(139, 92, 246, 0.7)',
-            'rgba(239, 68, 68, 0.7)'
-          ]
-        }]
-      }}
-      options={{ 
-        responsive: true,
-        maintainAspectRatio: false,
-      }} 
-    />
-  </div>
-</div>
-          </div>
-
-          {renderInventoryProducts()}
-        </div>
-      ) : (
-        renderProductAnalysis()
       )}
+
+      {/* Content */}
+      <div className="space-y-6">
+        {activeTab === 'sales' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Sales Overview */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <FiTrendingUp className="text-blue-600" />
+                نظرة عامة على المبيعات
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-gray-500">إجمالي المبيعات</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {formatCurrency(analyticsData.sales[period].totalSales)}
+                  </p>
+                </div>
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <p className="text-sm text-gray-500">عدد الطلبات</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {formatNumber(analyticsData.sales[period].salesCount)}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="h-64">
+                <Bar data={chartData.sales} options={chartOptions} />
+              </div>
+            </div>
+
+            {/* Recent Sales */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold mb-4">آخر المبيعات</h3>
+              <div className="space-y-3">
+                {analyticsData.sales[period].salesData.slice(0, 5).map((sale, index) => (
+                  <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="font-medium">فاتورة #{sale.invoiceNumber}</p>
+                      <p className="text-sm text-gray-500">{formatDate(sale.date)}</p>
+                    </div>
+                    <p className="font-bold text-green-600">{formatCurrency(sale.total)}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'inventory' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Inventory Overview */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <FiPackage className="text-purple-600" />
+                حالة المخزون
+              </h3>
+              
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <p className="text-sm text-gray-500">متوفر</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {analyticsData.inventory.report.inStock}
+                  </p>
+                </div>
+                <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                  <p className="text-sm text-gray-500">منخفض</p>
+                  <p className="text-2xl font-bold text-yellow-600">
+                    {analyticsData.inventory.report.lowStock}
+                  </p>
+                </div>
+                <div className="text-center p-4 bg-red-50 rounded-lg">
+                  <p className="text-sm text-gray-500">منتهي</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {analyticsData.inventory.report.outOfStock}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="h-64">
+                <Pie data={chartData.inventory} options={chartOptions} />
+              </div>
+            </div>
+
+            {/* Low Stock Items */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold mb-4">المنتجات منخفضة المخزون</h3>
+              <div className="space-y-3">
+                {analyticsData.inventory.products
+                  .filter(p => p.stock > 0 && p.stock <= 10)
+                  .slice(0, 5)
+                  .map((product) => (
+                    <div key={product.id} className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                      <div>
+                        <p className="font-medium">{product.name}</p>
+                        <p className="text-sm text-gray-500">{product.category}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-yellow-600">{product.stock}</p>
+                        <p className="text-sm text-gray-500">قطعة</p>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'customers' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Customer Overview */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <FiShoppingCart className="text-blue-600" />
+                نظرة عامة على العملاء
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-gray-500">إجمالي العملاء</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {analyticsData.customers.totalCustomers}
+                  </p>
+                </div>
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <p className="text-sm text-gray-500">عملاء نشطين</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {analyticsData.customers.activeCustomers}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Top Customers */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold mb-4">أفضل العملاء</h3>
+              <div className="space-y-3">
+                {analyticsData.customers.topCustomers.map((customer, index) => (
+                  <div key={customer.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <p className="font-medium">{customer.name}</p>
+                        <p className="text-sm text-gray-500">{customer.phone}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-green-600">{formatCurrency(customer.totalSpent)}</p>
+                      <p className="text-sm text-gray-500">{customer.purchaseCount} طلب</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'products' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Top Selling Products */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold mb-4">المنتجات الأكثر مبيعاً</h3>
+              <div className="h-64">
+                <Bar data={chartData.products.topSelling} options={chartOptions} />
+              </div>
+            </div>
+
+            {/* Top Revenue Products */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold mb-4">المنتجات الأعلى إيراداً</h3>
+              <div className="h-64">
+                <Bar data={chartData.products.revenue} options={chartOptions} />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

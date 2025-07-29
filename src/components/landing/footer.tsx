@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import TestimonialForm from './testimonial-form';
 import logo from './photos/image.png'
+import { useEffect, useState } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 const FacebookIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -29,13 +31,27 @@ const navLinks = [
 ];
 
 export default function Footer() {
+  const [contactInfo, setContactInfo] = useState({ storePhone: '', storeAddress: '', storeEmail: '' });
+  useEffect(() => {
+    const fetchContact = async () => {
+      try {
+        const contactDoc = await getDoc(doc(db, 'settings', 'contact'));
+        if (contactDoc.exists()) {
+          setContactInfo({
+            storePhone: contactDoc.data().storePhone || '',
+            storeAddress: contactDoc.data().storeAddress || '',
+            storeEmail: contactDoc.data().storeEmail || '',
+          });
+        }
+      } catch (e) {}
+    };
+    fetchContact();
+  }, []);
+
   return (
     <footer className="border-t bg-secondary/50 pt-16 pb-8">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-            <div className="lg:col-span-2">
-                <TestimonialForm />
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-12">
             <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-foreground">روابط سريعة</h3>
                 <ul className="space-y-2">
@@ -60,6 +76,14 @@ export default function Footer() {
                    <Link href="#" aria-label="Instagram" className="p-2 rounded-full bg-muted/50 text-muted-foreground hover:bg-[#E4405F] hover:text-white transition-colors">
                     <InstagramIcon className="h-5 w-5" />
                   </Link>
+                </div>
+            </div>
+            <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground">معلومات الاتصال</h3>
+                <div className="space-y-2 text-muted-foreground">
+                    <p>البريد الإلكتروني: {contactInfo.storeEmail}</p>
+                    <p>الهاتف: {contactInfo.storePhone}</p>
+                    <p>العنوان: {contactInfo.storeAddress}</p>
                 </div>
             </div>
         </div>
