@@ -1,44 +1,26 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/auth-provider';
 import type { Product, Sale, AppContextType, Testimonial, SaleReturn } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { db, auth } from '@/lib/firebase';
+import { localDB } from '@/lib/local-db';
 import { 
   collection, 
-  getDocs, 
-  addDoc, 
   doc, 
-  updateDoc, 
-  deleteDoc, 
+  getDocs, 
+  query, 
+  onSnapshot, 
+  orderBy, 
+  where, 
+  addDoc, 
+  serverTimestamp, 
   writeBatch, 
-  runTransaction,
-  documentId,
-  query,
-  where,
-  getDoc,
-  increment,
-  serverTimestamp,
-  orderBy,
-  onSnapshot,
-  setDoc
+  updateDoc, 
+  increment 
 } from 'firebase/firestore';
-import { signOut, onAuthStateChanged } from 'firebase/auth';
-
-// إضافة الأنواع الجديدة
-interface Customer {
-  id: string;
-  name: string;
-  phone: string;
-  email?: string;
-  address?: string;
-  totalSpent: number;
-  purchaseCount: number;
-  lastPurchase?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 interface Invoice {
   id: string;
@@ -169,6 +151,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const { user, loading } = useAuth();
   const [userData, setUserData] = useState<any>(null);
+  // إصلاح: تعريف setLoading
+  const [loadingState, setLoading] = useState(false);
+  const router = useRouter();
 
   // دوال مساعدة
   const parseFirebaseDate = (timestamp: any) => {
@@ -827,9 +812,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await signOut(auth);
       // Clear the token cookie
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; samesite=lax';
-      // Clear user data
       setUser(null);
       setUserData(null);
+          localStorage.clear();
+          sessionStorage.clear();
       
       // Show success message
       toast({ 
@@ -837,12 +823,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         description: 'نتمنى لك يوماً سعيداً!'
       });
       
-      // Redirect to login page after a short delay
-      if (typeof window !== 'undefined') {
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 1000);
-      }
+      // Redirect to login page مباشرة بدون تأخير
+      router.replace('/login');
     } catch (error) {
       console.error('Error signing out:', error);
       toast({
@@ -1052,6 +1034,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const unsubscribeListeners = setupRealtimeListeners();
     return () => unsubscribeListeners?.();
   }, [user?.uid, fetchUserData, setupRealtimeListeners]);
+
+  // حفظ نسخة من البيانات من الإنترنت في IndexedDB
+  useEffect(() => {
+    if (navigator.onLine && products.length > 0) {
+      // حفظ المنتجات
+      localDB.products.clear().then(() => {
+        localDB.products.bulkAdd(products.map(p => ({
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          stock: p.stock,
+          category: p.category,
+          barcode: p.barcode
+        }) as LocalProduct));
+      });
+    }
+  }, [products]);
+
+  useEffect(() => {
+    if (navigator.onLine && sales.length > 0) {
+      // حفظ المبيعات
+      localDB.sales.clear().then(() => {
+        localDB.sales.bulkAdd(sales.map(s => ({
+          id: s.id,
+          date: s.date,
+          total: s.total,
+          items: s.items
+        }) as LocalSale));
+      });
+    }
+  }, [sales]);
 
   // دوال إدارة العملاء المحسنة
   const updateCustomer = async (id: string, customerData: Partial<Customer>) => {

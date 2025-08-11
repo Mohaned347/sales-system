@@ -17,11 +17,11 @@ export default function DashboardLayout({ children }) {
   const handleLogoutClick = useCallback(async () => {
     try {
       await handleLogout();
-      router.push('/login');
+      // لا داعي لاستدعاء router.push('/login') هنا لأن handleLogout يوجه تلقائياً
     } catch (error) {
       console.error('Error signing out: ', error);
     }
-  }, [handleLogout, router]);
+  }, [handleLogout]);
 
   const menuItems = [
     { name: 'الرئيسية', icon: FiHome, path: '/dashboard' },

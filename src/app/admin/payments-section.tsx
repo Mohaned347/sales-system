@@ -15,6 +15,23 @@ function formatDate(ts) {
 
 function PaymentDetailsModal({ payment, onClose }) {
   const [isProcessing, setIsProcessing] = React.useState(false);
+  const [userData, setUserData] = React.useState(null);
+  React.useEffect(() => {
+    let ignore = false;
+    async function fetchUser() {
+      if (payment?.userId) {
+        try {
+          const { doc, getDoc } = await import('firebase/firestore');
+          const userDoc = await getDoc(doc(db, 'users', payment.userId));
+          if (!ignore && userDoc.exists()) {
+            setUserData(userDoc.data());
+          }
+        } catch {}
+      }
+    }
+    fetchUser();
+    return () => { ignore = true; };
+  }, [payment]);
   if (!payment) return null;
   const handleConfirm = async () => {
     setIsProcessing(true);
@@ -42,16 +59,47 @@ function PaymentDetailsModal({ payment, onClose }) {
       <div className="bg-white rounded-xl shadow-xl p-4 w-full max-w-sm relative max-h-[80vh] overflow-y-auto">
         <button onClick={onClose} className="absolute top-2 left-2 text-gray-500 hover:text-red-600 font-bold text-2xl">×</button>
         <h2 className="text-lg font-bold mb-3 text-center border-b pb-2">تفاصيل الدفع</h2>
-        <div className="space-y-2 text-sm">
-          <div><b>الاسم:</b> {payment.name || '-'}</div>
-          <div><b>البريد:</b> {payment.email || '-'}</div>
-          <div><b>الهاتف:</b> {payment.phone || '-'}</div>
-          <div><b>الخطة:</b> {payment.planName || '-'}</div>
-          <div><b>المبلغ:</b> {payment.amount?.toLocaleString() || '-'} ج.س</div>
-          <div><b>رقم حساب البنك:</b> {payment.bankAccount || '-'}</div>
-          <div><b>رقم العملية:</b> {payment.transactionId || '-'}</div>
-          <div><b>الحالة:</b> {payment.status === 'paid' ? 'مدفوع' : 'قيد المراجعة'}</div>
-          <div><b>تاريخ الإرسال:</b> {formatDate(payment.createdAt)}</div>
+        <div className="divide-y divide-gray-200 mb-4">
+          <div className="flex justify-between py-2 text-sm">
+            <span className="text-gray-600">الاسم</span>
+            <span className="font-bold">{
+              userData?.userName || userData?.displayName || payment.userName || payment.displayName || payment.name || '-'
+            }</span>
+          </div>
+          <div className="flex justify-between py-2 text-sm">
+            <span className="text-gray-600">البريد</span>
+            <span className="font-bold">{userData?.email || payment.email || '-'}</span>
+          </div>
+          <div className="flex justify-between py-2 text-sm">
+            <span className="text-gray-600">الهاتف</span>
+            <span className="font-bold">{userData?.phone || payment.phone || '-'}</span>
+          </div>
+          <div className="flex justify-between py-2 text-sm">
+            <span className="text-gray-600">الخطة</span>
+            <span className="font-bold">{payment.planName || '-'}</span>
+          </div>
+          <div className="flex justify-between py-2 text-sm">
+            <span className="text-gray-600">المبلغ</span>
+            <span className="font-bold">{payment.amount?.toLocaleString() || '-'} ج.س</span>
+          </div>
+          <div className="flex justify-between py-2 text-sm">
+            <span className="text-gray-600">رقم حساب البنك</span>
+            <span className="font-bold">{payment.bankAccount || '-'}</span>
+          </div>
+          <div className="flex justify-between py-2 text-sm">
+            <span className="text-gray-600">رقم العملية</span>
+            <span className="font-bold">{payment.transactionId || '-'}</span>
+          </div>
+          <div className="flex justify-between py-2 text-sm">
+            <span className="text-gray-600">الحالة</span>
+            <span className={`font-bold ${payment.status === 'paid' ? 'text-green-700' : payment.status === 'rejected' ? 'text-red-700' : 'text-yellow-700'}`}>
+              {payment.status === 'paid' ? 'مدفوع' : payment.status === 'rejected' ? 'مرفوض' : 'قيد المراجعة'}
+            </span>
+          </div>
+          <div className="flex justify-between py-2 text-sm">
+            <span className="text-gray-600">تاريخ الإرسال</span>
+            <span className="font-bold">{formatDate(payment.createdAt)}</span>
+          </div>
         </div>
         <div className="flex gap-2 mt-6">
           <button
@@ -122,7 +170,8 @@ export default function PaymentsSection() {
   }, []);
 
   const paymentsMemo = useMemo(() => payments, [payments]);
-  const archivePayments = useMemo(() => payments.filter(p => p.status === 'paid'), [payments]);
+  // الأرشيف يشمل المدفوعات المدفوعة والمرفوضة
+  const archivePayments = useMemo(() => payments.filter(p => p.status === 'paid' || p.status === 'rejected'), [payments]);
   const pendingPayments = useMemo(() => payments.filter(p => p.status !== 'paid'), [payments]);
 
   // تصفية المدفوعات حسب البحث
@@ -162,52 +211,76 @@ export default function PaymentsSection() {
       {loading ? (
         <div className="text-center py-12 text-lg text-gray-500">جاري تحميل المدفوعات...</div>
       ) : showArchive ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 overflow-x-auto">
+        <div className="grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 overflow-x-auto">
           {archivePayments.length === 0 && <div className="col-span-full text-center text-gray-400">لا يوجد مدفوعات مؤرشفة بعد.</div>}
           {archivePayments.map((payment) => (
-            <div key={payment.id} className="bg-white rounded-xl shadow p-6 flex flex-col gap-2 border border-gray-100">
-              <div className="flex items-center gap-3 mb-2">
+            <div key={payment.id} className="bg-white rounded-xl shadow p-4 sm:p-6 flex flex-col gap-2 border border-gray-100">
+              <div className="flex flex-wrap items-center gap-3 mb-2">
                 <FiCreditCard className="text-green-600 text-2xl" />
-                <span className="font-bold text-lg">{payment.name || '-'}</span>
-                <span className="ml-auto px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">مدفوع</span>
+                <span className="font-bold text-lg">{payment.userName || payment.displayName || payment.name || '-'}</span>
+                <span className={`ml-auto px-3 py-1 rounded-full text-xs font-bold ${payment.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                  {payment.status === 'paid' ? 'مدفوع' : payment.status === 'rejected' ? 'مرفوض' : ''}
+                </span>
               </div>
               <div className="text-gray-600">الخطة: {payment.planName || '-'}</div>
               <div className="text-gray-600">المبلغ: {payment.amount?.toLocaleString() || '-'} ج.س</div>
               <div className="text-gray-500 text-sm">رقم حساب البنك: {payment.bankAccount || '-'}</div>
               <div className="text-gray-500 text-sm">رقم العملية: {payment.transactionId || '-'}</div>
               <div className="text-gray-500 text-sm">تاريخ الإرسال: {formatDate(payment.createdAt)}</div>
-              <div className="flex gap-2 mt-4">
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition" onClick={() => handleDetails(payment)}>
+              <div className="flex flex-col xs:flex-row gap-2 mt-4">
+                <button className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition w-full xs:w-auto" onClick={() => handleDetails(payment)}>
                   تفاصيل الدفع
                 </button>
-                <button className="bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition" onClick={() => handleShowInvoice(payment)}>
+                <button className="bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition w-full xs:w-auto" onClick={() => handleShowInvoice(payment)}>
                   عرض الفاتورة
+                </button>
+                <button className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-700 transition w-full xs:w-auto" onClick={async () => {
+                  try {
+                    const { doc, deleteDoc } = await import('firebase/firestore');
+                    await deleteDoc(doc(db, 'payments', payment.id));
+                    toast({ title: 'تم حذف الدفع المؤرشف بنجاح', variant: 'success' });
+                  } catch (error) {
+                    toast({ title: 'حدث خطأ أثناء الحذف', description: error.message, variant: 'destructive' });
+                  }
+                }}>
+                  حذف
                 </button>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 overflow-x-auto">
+        <div className="grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 overflow-x-auto">
           {pendingPayments.length === 0 && <div className="col-span-full text-center text-gray-400">لا يوجد مدفوعات قيد المراجعة حالياً.</div>}
           {pendingPayments.map((payment) => (
             <div key={payment.id} className="bg-white rounded-xl shadow p-6 flex flex-col gap-2 border border-gray-100">
               <div className="flex items-center gap-3 mb-2">
                 <FiCreditCard className="text-green-600 text-2xl" />
                 <span className="font-bold text-lg">{payment.userName || payment.name || '-'}</span>
-                <span className={`ml-auto px-3 py-1 rounded-full text-xs font-bold ${payment.status === "paid" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>{payment.status === "paid" ? "مدفوع" : "قيد المراجعة"}</span>
+                <span className={`ml-auto px-3 py-1 rounded-full text-xs font-bold ${payment.status === "paid" ? "bg-green-100 text-green-800" : payment.status === "rejected" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"}`}>{payment.status === "paid" ? "مدفوع" : payment.status === "rejected" ? "مرفوض" : "قيد المراجعة"}</span>
               </div>
               <div className="text-gray-600">الخطة: {payment.planName || '-'}</div>
               <div className="text-gray-600">المبلغ: {payment.amount?.toLocaleString() || '-'} ج.س</div>
               <div className="text-gray-500 text-sm">رقم حساب البنك: {payment.bankAccount || '-'}</div>
               <div className="text-gray-500 text-sm">رقم العملية: {payment.transactionId || '-'}</div>
               <div className="text-gray-500 text-sm">تاريخ الإرسال: {formatDate(payment.createdAt)}</div>
-              <div className="flex gap-2 mt-4">
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition" onClick={() => handleDetails(payment)}>
+              <div className="flex flex-col xs:flex-row gap-2 mt-4">
+                <button className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition w-full xs:w-auto" onClick={() => handleDetails(payment)}>
                   تفاصيل الدفع
                 </button>
-                <button className="bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition" onClick={() => handleShowInvoice(payment)}>
+                <button className="bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition w-full xs:w-auto" onClick={() => handleShowInvoice(payment)}>
                   عرض الفاتورة
+                </button>
+                <button className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-700 transition w-full xs:w-auto" onClick={async () => {
+                  try {
+                    const { doc, updateDoc } = await import('firebase/firestore');
+                    await updateDoc(doc(db, 'payments', payment.id), { status: 'rejected' });
+                    toast({ title: 'تم رفض الدفع ونقله للأرشيف كمرفوض', variant: 'success' });
+                  } catch (error) {
+                    toast({ title: 'حدث خطأ أثناء الرفض', description: error.message, variant: 'destructive' });
+                  }
+                }}>
+                  رفض الدفع
                 </button>
               </div>
             </div>

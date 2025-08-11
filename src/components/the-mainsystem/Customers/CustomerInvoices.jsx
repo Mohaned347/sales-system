@@ -24,7 +24,6 @@ export default function CustomerInvoices({ customerId }) {
   useEffect(() => {
     const fetchInvoices = async () => {
       if (!customerId || !user?.uid) return;
-      
       try {
         const querySnapshot = await getDocs(
           collection(db, 'users', user.uid, 'customers', customerId, 'invoices')
@@ -34,6 +33,8 @@ export default function CustomerInvoices({ customerId }) {
           ...doc.data(),
           date: doc.data().date?.toDate()?.toLocaleDateString('ar-EG') || 'غير محدد'
         }));
+        console.log('[DEBUG] Fetched invoices:', invoicesList);
+        console.log('[DEBUG] Fetched invoices count:', invoicesList.length);
         setFilteredInvoices(invoicesList);
         setLoading(false);
       } catch (error) {
@@ -41,7 +42,6 @@ export default function CustomerInvoices({ customerId }) {
         toast.error('حدث خطأ في جلب الفواتير');
       }
     };
-
     fetchInvoices();
   }, [customerId, user?.uid, invoices]);
 

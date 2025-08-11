@@ -2,9 +2,56 @@ import { FiX, FiShoppingCart, FiDollarSign, FiFileText, FiPercent, FiUser, FiPho
 
 export default function InvoiceDetailsModal({ invoice, onClose }) {
   // حساب الإجماليات مسبقاً لتبسيط الكود
-  const subtotal = invoice.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = invoice.items?.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0;
   const taxAmount = subtotal * (invoice.tax / 100 || 0);
   const total = subtotal - (invoice.discount || 0) + taxAmount;
+
+  // منطق احتياطي لرقم الفاتورة والتاريخ
+  const invoiceNumber = invoice.invoiceNumber || invoice.id || 'غير معروف';
+  let invoiceDate = 'غير معروف';
+  let parsedDate = null;
+  try {
+    // سجل جميع القيم المحتملة للتاريخ
+    console.log('Invoice date fields:', {
+      date: invoice.date,
+      createdAt: invoice.createdAt,
+      updatedAt: invoice.updatedAt
+    });
+    // جرب جميع الحقول الممكنة
+    const dateFields = [invoice.date, invoice.createdAt, invoice.updatedAt];
+    for (let field of dateFields) {
+      if (!field) continue;
+      // Firestore Timestamp
+      if (typeof field.toDate === 'function') {
+        parsedDate = field.toDate();
+      }
+      // Unix timestamp (number)
+      else if (typeof field === 'number') {
+        parsedDate = new Date(field * (field > 1e12 ? 1 : 1000)); // يدعم ms و s
+      }
+      // ISO string
+      else if (typeof field === 'string') {
+        parsedDate = new Date(field);
+      }
+      // JS Date
+      else if (field instanceof Date) {
+        parsedDate = field;
+      }
+      // كائن فيه خاصية seconds (Firestore Timestamp raw)
+      else if (typeof field === 'object' && field.seconds) {
+        parsedDate = new Date(field.seconds * 1000);
+      }
+      if (parsedDate && !isNaN(parsedDate.getTime())) {
+        invoiceDate = parsedDate.toLocaleDateString('ar-EG');
+        break;
+      }
+    }
+    if (invoiceDate === 'غير معروف') {
+      console.warn('تعذر استخراج تاريخ صالح للفاتورة:', invoice);
+    }
+  } catch (err) {
+    console.error('خطأ في استخراج تاريخ الفاتورة:', err, invoice);
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -12,7 +59,7 @@ export default function InvoiceDetailsModal({ invoice, onClose }) {
         <div className="flex justify-between items-center border-b p-5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-t-xl">
           <div>
             <h3 className="text-xl font-bold">تفاصيل الفاتورة</h3>
-            <p className="text-sm text-blue-100">رقم الفاتورة: {invoice.invoiceNumber}</p>
+            <p className="text-sm text-blue-100">رقم الفاتورة: {invoiceNumber}</p>
           </div>
           <button onClick={onClose} className="text-blue-100 hover:text-white p-1">
             <FiX size={24} />
@@ -46,8 +93,8 @@ export default function InvoiceDetailsModal({ invoice, onClose }) {
                 <FiFileText /> معلومات الفاتورة
               </h4>
               <div className="space-y-2">
-                <p><span className="font-medium">رقم الفاتورة:</span> {invoice.invoiceNumber}</p>
-                <p><span className="font-medium">التاريخ:</span> {invoice.date}</p>
+                <p><span className="font-medium">رقم الفاتورة:</span> {invoiceNumber}</p>
+                <p><span className="font-medium">التاريخ:</span> {invoiceDate}</p>
                 <p><span className="font-medium">الحالة:</span> 
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ml-2 ${
                     invoice.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
@@ -159,7 +206,7 @@ export default function InvoiceDetailsModal({ invoice, onClose }) {
                     <script>
                       window.onload = function() {
                         window.print();
-                        setTimeout(() => window.close(), 500);
+                        window.close();
                       };
                     </script>
                   </body>

@@ -1,12 +1,108 @@
 // --- Products.jsx ---
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiRefreshCw } from 'react-icons/fi';
 import { useAppContext } from '../../context/app-context';
 import ProductModal from './ProductModal';
 import { toast } from 'react-toastify';
+import { addLocalProduct, getAllLocalProducts } from '@/lib/local-db';
 
 export default function Products() {
-  const { products, loading, addProduct, updateProduct, deleteProduct, refreshData } = useAppContext();
+  // خطوات الجولة الإرشادية للمنتجات
+  const productTourSteps = [
+    {
+      selector: '.bg-blue-600.text-white',
+      text: 'زر إضافة منتج جديد: يمكنك من هنا إضافة منتج جديد للنظام.'
+    },
+    {
+      selector: '.bg-gray-200.text-gray-800',
+      text: 'زر تحديث المنتجات: يعيد تحميل المنتجات من قاعدة البيانات.'
+    },
+    {
+      selector: '.text-blue-600',
+      text: 'زر تعديل المنتج: يتيح لك تعديل بيانات المنتج الحالي.'
+    },
+    {
+      selector: '.text-red-600',
+      text: 'زر حذف المنتج: يتيح لك حذف المنتج من النظام بعد التأكيد.'
+    }
+  ];
+
+  // منطق الجولة الإرشادية
+  const [showTour, setShowTour] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
+  // جلب حالة المستخدم من السياق
+  const { products, loading, addProduct, updateProduct, deleteProduct, refreshData, user } = useAppContext();
+
+  // تحقق من حالة العرض عند التحميل
+  useEffect(() => {
+    const dontShow = localStorage.getItem('dontShowProductTour');
+    if (user?.role === 'trial_user' && !dontShow) {
+      setShowTour(true);
+    }
+  }, [user]);
+
+  // إخفاء الجولة وعدم العرض مرة أخرى
+  const handleDontShowAgain = () => {
+    localStorage.setItem('dontShowProductTour', 'true');
+    setShowTour(false);
+    setDontShowAgain(true);
+  };
+
+  // صندوق شرح الجولة الإرشادية مع هايلايت
+  const TourGuideBox = ({ step, onNext, onPrev, onClose, onDontShowAgain }) => {
+    if (!productTourSteps[step]) return null;
+    // تحديد العنصر المستهدف
+    const target = document.querySelector(productTourSteps[step].selector);
+    // إضافة/إزالة الهايلايت
+    useEffect(() => {
+      if (target) {
+        target.classList.add('tour-highlight');
+      }
+      return () => {
+        if (target) {
+          target.classList.remove('tour-highlight');
+        }
+      };
+    }, [step, target]);
+
+    let style = { position: 'fixed', top: '20%', left: '50%', zIndex: 9999, background: '#fff', border: '2px solid #2563eb', borderRadius: '12px', padding: '18px', minWidth: '260px', boxShadow: '0 2px 16px rgba(0,0,0,0.12)' };
+    if (target) {
+      const rect = target.getBoundingClientRect();
+      style = { ...style, top: rect.top + window.scrollY + rect.height + 8, left: rect.left + window.scrollX, position: 'absolute' };
+    }
+    return (
+      <div style={style} dir="rtl">
+        <div style={{ fontWeight: 'bold', color: '#2563eb', marginBottom: 8 }}>شرح: </div>
+        <div style={{ marginBottom: 12 }}>{productTourSteps[step].text}</div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={onPrev} disabled={step === 0} style={{ padding: '4px 12px', borderRadius: 6, background: '#eee', border: 'none' }}>السابق</button>
+          <button onClick={onNext} disabled={step === productTourSteps.length - 1} style={{ padding: '4px 12px', borderRadius: 6, background: '#2563eb', color: '#fff', border: 'none' }}>التالي</button>
+          <button onClick={onClose} style={{ padding: '4px 12px', borderRadius: 6, background: '#f87171', color: '#fff', border: 'none' }}>إغلاق</button>
+        </div>
+        <div style={{ marginTop: 8 }}>
+          <label style={{ fontSize: '13px', cursor: 'pointer' }}>
+            <input type="checkbox" checked={dontShowAgain} onChange={onDontShowAgain} /> لا تظهر الجولة مرة أخرى
+          </label>
+        </div>
+      </div>
+    );
+  };
+// إضافة ستايل الهايلايت للزر المستهدف
+if (typeof window !== 'undefined') {
+  const style = document.createElement('style');
+  style.innerHTML = `.tour-highlight {
+    box-shadow: 0 0 0 4px #2563eb99, 0 0 16px 4px #2563eb55;
+    transition: box-shadow 0.3s;
+    position: relative;
+    z-index: 10000;
+  }`;
+  if (!document.getElementById('tour-highlight-style')) {
+    style.id = 'tour-highlight-style';
+    document.head.appendChild(style);
+  }
+}
+  // ...existing code...
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
@@ -18,6 +114,15 @@ export default function Products() {
         toast.success('تم تحديث المنتج بنجاح');
       } else {
         await addProduct(productData);
+        // إضافة المنتج محلياً
+        await addLocalProduct({
+          id: productData.id,
+          name: productData.name,
+          price: productData.price,
+          stock: productData.stock,
+          category: productData.category,
+          barcode: productData.barcode
+        });
         toast.success('تم إضافة المنتج بنجاح');
       }
       setIsModalOpen(false);
@@ -46,6 +151,17 @@ export default function Products() {
 
   return (
     <div className="p-4 sm:p-6 w-full">
+      {/* صندوق الجولة الإرشادية */}
+      {showTour && (
+        <TourGuideBox
+          step={tourStep}
+          onNext={() => setTourStep((s) => Math.min(s + 1, productTourSteps.length - 1))}
+          onPrev={() => setTourStep((s) => Math.max(s - 1, 0))}
+          onClose={() => setShowTour(false)}
+          onDontShowAgain={handleDontShowAgain}
+        />
+      )}
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold text-blue-800">إدارة المنتجات</h1>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">

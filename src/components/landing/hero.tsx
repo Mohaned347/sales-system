@@ -3,8 +3,10 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import dashboardimage from './photos/Untitled (10).png';
+import { useAuth } from '@/components/auth/auth-provider';
 
 export default function Hero() {
+  const { user } = useAuth();
   return (
     <section id="hero" className="py-20 md:py-32 bg-background relative overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
@@ -15,11 +17,27 @@ export default function Hero() {
           بسّط مبيعاتك، أدر مخزونك، وتعامل مع الفواتير بكل سهولة. "مبيعاتي" هو الأداة الوحيدة التي تحتاجها لتنمية أعمالك وتحقيق النجاح.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4 opacity-0 animate-fade-in-down [animation-delay:400ms]">
-          <Button size="lg" asChild className="shadow-[0_0_15px_hsl(var(--primary))] hover:shadow-[0_0_25px_hsl(var(--primary))] transition-shadow">
-            <Link href="/signup">
-              ابدأ تجربتك المجانية <ArrowLeft className="mr-2" />
-            </Link>
-          </Button>
+          {user ? (
+            user.role === 'admin' ? (
+              <Button size="lg" asChild className="shadow-[0_0_15px_hsl(var(--primary))] hover:shadow-[0_0_25px_hsl(var(--primary))] transition-shadow">
+                <Link href="/admin">
+                  انتقل للإدارة <ArrowLeft className="mr-2" />
+                </Link>
+              </Button>
+            ) : (
+              <Button size="lg" asChild className="shadow-[0_0_15px_hsl(var(--primary))] hover:shadow-[0_0_25px_hsl(var(--primary))] transition-shadow">
+                <Link href="/dashboard">
+                  انتقل للنظام <ArrowLeft className="mr-2" />
+                </Link>
+              </Button>
+            )
+          ) : (
+            <Button size="lg" asChild className="shadow-[0_0_15px_hsl(var(--primary))] hover:shadow-[0_0_25px_hsl(var(--primary))] transition-shadow">
+              <Link href="/signup">
+                ابدأ تجربتك المجانية <ArrowLeft className="mr-2" />
+              </Link>
+            </Button>
+          )}
           <Button size="lg" variant="outline" asChild>
             <Link href="#demo">
               شاهد العرض التوضيحي

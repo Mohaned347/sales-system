@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { FiTrendingUp, FiPackage, FiShoppingCart, FiCalendar, FiPieChart, FiBarChart2, FiDownload, FiStar, FiAward, FiRefreshCw, FiFilter } from 'react-icons/fi';
 import { Bar, Pie, Line, Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement } from 'chart.js';
@@ -6,6 +6,7 @@ import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import { useAppContext } from '../../context/app-context';
 import Link from 'next/link';
+import { getAllLocalProducts, getAllLocalSales, localDB } from '@/lib/local-db';
 
 ChartJS.register(
   CategoryScale,
@@ -20,52 +21,77 @@ ChartJS.register(
 );
 
 export default function Analytics() {
-  const { sales, products, getSalesAnalytics, getInventoryReport, getCustomerAnalytics } = useAppContext();
+  const { sales, products, getSalesAnalytics, getInventoryReport } = useAppContext();
   const [activeTab, setActiveTab] = useState('sales');
   const [period, setPeriod] = useState('daily');
   const [isExporting, setIsExporting] = useState(false);
   
+  // جلب البيانات المحلية عند فقدان الإنترنت
+  const [offlineProducts, setOfflineProducts] = useState([]);
+  const [offlineSales, setOfflineSales] = useState([]);
+
+  useEffect(() => {
+    if (!navigator.onLine) {
+      getAllLocalProducts().then(setOfflineProducts);
+      getAllLocalSales().then(setOfflineSales);
+    }
+  }, []);
+
+  // استخدم البيانات المحلية إذا كنت أوفلاين
+  const productsToUse = navigator.onLine ? products : offlineProducts;
+  const salesToUse = navigator.onLine ? sales : offlineSales;
+
   // تحسين الأداء باستخدام useMemo
   const analyticsData = useMemo(() => {
     // تحليل المبيعات
-    const dailyAnalytics = getSalesAnalytics('daily');
-    const monthlyAnalytics = getSalesAnalytics('monthly');
-    const yearlyAnalytics = getSalesAnalytics('yearly');
-    
+    const dailyAnalytics = getSalesAnalytics('daily', salesToUse);
+    const monthlyAnalytics = getSalesAnalytics('monthly', salesToUse);
+    const yearlyAnalytics = getSalesAnalytics('yearly', salesToUse);
+
     // تحليل المخزون
-    const inventoryReport = getInventoryReport();
+    const inventoryReport = getInventoryReport(productsToUse);
     const inventoryProducts = inventoryReport.products || [];
-    
-    // تحليل العملاء
-    const customerAnalytics = getCustomerAnalytics();
-    
-    // تحليل المنتجات الأكثر مبيعًا
-    const productMap = {};
-    
-    sales.forEach(sale => {
-      sale.items?.forEach(item => {
-        if (!productMap[item.productId]) {
-          const product = products.find(p => p.id === item.productId) || {};
-          productMap[item.productId] = {
-            id: item.productId,
-            name: product.name || 'غير معروف',
-            category: product.category || 'غير معروف',
-            price: product.price || 0,
-            totalSold: 0,
-            totalRevenue: 0,
-            lastSold: sale.date ? new Date(sale.date) : null
+
+    // تحليل العملاء من بيانات المبيعات
+    // بناء قائمة العملاء من عمليات البيع
+    const customerMap = {};
+    salesToUse.forEach(sale => {
+      if (sale.customerId) {
+        if (!customerMap[sale.customerId]) {
+          customerMap[sale.customerId] = {
+            id: sale.customerId,
+            name: sale.customerName || 'غير معروف',
+            phone: sale.customerPhone || '',
+            totalSpent: 0,
+            purchaseCount: 0,
+            lastPurchase: sale.date ? new Date(sale.date) : null
           };
         }
-        productMap[item.productId].totalSold += item.quantity || 0;
-        productMap[item.productId].totalRevenue += (item.quantity || 0) * (item.price || 0);
-        if (sale.date && (!productMap[item.productId].lastSold || new Date(sale.date) > productMap[item.productId].lastSold)) {
-          productMap[item.productId].lastSold = new Date(sale.date);
+        customerMap[sale.customerId].totalSpent += sale.total || 0;
+        customerMap[sale.customerId].purchaseCount += 1;
+        if (sale.date && (!customerMap[sale.customerId].lastPurchase || new Date(sale.date) > customerMap[sale.customerId].lastPurchase)) {
+          customerMap[sale.customerId].lastPurchase = new Date(sale.date);
         }
-      });
+      }
     });
-    
-    const productArray = Object.values(productMap);
-    
+    const customerArray = Object.values(customerMap);
+
+    // أفضل العملاء حسب إجمالي المشتريات
+    const topCustomers = [...customerArray].sort((a, b) => b.totalSpent - a.totalSpent).slice(0, 5);
+
+    // العملاء النشطين هم من لديهم عمليات بيع في الفترة المحددة
+    const salesPeriod = (() => {
+      if (period === 'daily') return dailyAnalytics.salesData || [];
+      if (period === 'monthly') return monthlyAnalytics.salesData || [];
+      if (period === 'yearly') return yearlyAnalytics.salesData || [];
+      return [];
+    })();
+    const activeCustomerIds = new Set();
+    salesPeriod.forEach(sale => {
+      if (sale.customerId) activeCustomerIds.add(sale.customerId);
+    });
+    const activeCustomersCount = customerArray.filter(c => activeCustomerIds.has(c.id)).length;
+
     return {
       sales: {
         daily: dailyAnalytics,
@@ -76,15 +102,47 @@ export default function Analytics() {
         report: inventoryReport,
         products: inventoryProducts
       },
-      customers: customerAnalytics,
-      products: {
-        topSellingByQuantity: [...productArray].sort((a, b) => b.totalSold - a.totalSold).slice(0, 5),
-        topSellingByRevenue: [...productArray].sort((a, b) => b.totalRevenue - a.totalRevenue).slice(0, 5),
-        recentlySold: [...productArray].filter(p => p.lastSold).sort((a, b) => b.lastSold - a.lastSold).slice(0, 5),
-        allProducts: productArray
-      }
+      customers: {
+        customerStats: customerArray,
+        totalCustomers: customerArray.length,
+        activeCustomers: activeCustomersCount,
+        topCustomers
+      },
+      products: (() => {
+        // ...existing code...
+        const productMap = {};
+        salesToUse.forEach(sale => {
+          sale.items?.forEach(item => {
+            if (!productMap[item.productId]) {
+              const product = productsToUse.find(p => p.id === item.productId) || {};
+              productMap[item.productId] = {
+                id: item.productId,
+                name: product.name || 'غير معروف',
+                category: product.category || 'غير معروف',
+                price: product.price || 0,
+                totalSold: 0,
+                totalRevenue: 0,
+                lastSold: sale.date ? new Date(sale.date) : null
+              };
+            }
+            productMap[item.productId].totalSold += item.quantity || 0;
+            productMap[item.productId].totalRevenue += (item.quantity || 0) * (item.price || 0);
+            if (sale.date && (!productMap[item.productId].lastSold || new Date(sale.date) > productMap[item.productId].lastSold)) {
+              productMap[item.productId].lastSold = new Date(sale.date);
+            }
+          });
+        });
+        const productArray = Object.values(productMap);
+        return {
+          topSellingByQuantity: [...productArray].sort((a, b) => b.totalSold - a.totalSold).slice(0, 5),
+          topSellingByRevenue: [...productArray].sort((a, b) => b.totalRevenue - a.totalRevenue).slice(0, 5),
+          recentlySold: [...productArray].filter(p => p.lastSold).sort((a, b) => b.lastSold - a.lastSold).slice(0, 5),
+          allProducts: productArray
+        };
+      })()
     };
-  }, [sales, products, getSalesAnalytics, getInventoryReport, getCustomerAnalytics]);
+  }, [productsToUse, salesToUse, getSalesAnalytics, getInventoryReport, period]);
+  // ...تم نقل حساب العملاء النشطين داخل useMemo الرئيسي...
 
   const formatNumber = useCallback((num) => {
     return new Intl.NumberFormat('ar-EG').format(num || 0);
@@ -260,6 +318,31 @@ export default function Analytics() {
     }
   };
 
+  // حفظ نسخة من بيانات التحليلات من الإنترنت في IndexedDB
+  useEffect(() => {
+    if (navigator.onLine && products.length > 0 && sales.length > 0) {
+      // حفظ نسخة من الإحصائيات (يمكنك تخصيص ما تريد حفظه)
+      localDB.products.clear().then(() => {
+        localDB.products.bulkAdd(products.map(p => ({
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          stock: p.stock,
+          category: p.category,
+          barcode: p.barcode
+        })));
+      });
+      localDB.sales.clear().then(() => {
+        localDB.sales.bulkAdd(sales.map(s => ({
+          id: s.id,
+          date: s.date,
+          total: s.total,
+          items: s.items
+        })));
+      });
+    }
+  }, [products, sales]);
+
   return (
     <div className="p-4 md:p-6 bg-gray-50 min-h-screen" dir="rtl">
       {/* Header */}
@@ -287,8 +370,8 @@ export default function Analytics() {
 
       {/* Tabs */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-1 mb-6">
-        <div className="flex space-x-1">
-          {[
+        <div className="flex space-x-1 flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-yellow-400 scrollbar-track-yellow-100">
+          {[ 
             { id: 'sales', name: 'المبيعات', icon: FiTrendingUp },
             { id: 'inventory', name: 'المخزون', icon: FiPackage },
             { id: 'customers', name: 'العملاء', icon: FiShoppingCart },
@@ -297,7 +380,7 @@ export default function Analytics() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'bg-yellow-100 text-yellow-700'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'

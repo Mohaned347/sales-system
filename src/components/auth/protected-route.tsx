@@ -1,27 +1,22 @@
 "use client";
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/app-context';
 
-export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
+import { useEffect, useState } from 'react';
 
+export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAppContext();
   const router = useRouter();
-  // إضافة منطق انتظار قصير قبل إعادة التوجيه
+  // منطق hydration guard
+  const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
-    if (typeof window === 'undefined') return;
-    if (!loading && !user) {
-      // انتظر 300ms إضافية قبل التوجيه، لإعطاء فرصة للـ context
-      timeout = setTimeout(() => {
-        if (!user) router.push('/login');
-      }, 300);
-    }
-    return () => clearTimeout(timeout);
-  }, [user, loading, router]);
-
-  // أثناء التحميل أو إذا لم يوجد مستخدم بعد، أظهر شاشة التحميل
+    setHydrated(true);
+  }, []);
+  if (!hydrated) {
+    return null;
+  }
+  // أثناء التحميل، أظهر شاشة تحميل فقط
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -29,11 +24,13 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
       </div>
     );
   }
-  // إذا انتهى التحميل ولا يوجد مستخدم، لا تعرض شيئاً (سيتم التوجيه بعد قليل)
+  // بعد انتهاء التحميل، إذا لم يوجد مستخدم، أعد التوجيه مباشرة
   if (!user) {
+    if (typeof window !== 'undefined') {
+      router.replace('/login');
+    }
     return null;
   }
-
-  // If user is logged in, render the children
+  // إذا كان المستخدم موجود، اعرض الأطفال
   return <>{children}</>;
 }

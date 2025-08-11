@@ -236,22 +236,8 @@ const handlePrint = () => {
           ${printRef.current.innerHTML}
           <script>
             // محاولة الطباعة تلقائياً
-            setTimeout(() => {
-              if (window.matchMedia) {
-                const mediaQueryList = window.matchMedia('print');
-                mediaQueryList.addListener((mql) => {
-                  if (!mql.matches) {
-                    window.close();
-                  }
-                });
-              }
-              window.print();
-              
-              // إغلاق النافذة بعد 5 ثوان إذا لم يتم الطباعة
-              setTimeout(() => {
+                window.print();
                 window.close();
-              }, 5000);
-            }, 300);
           </script>
         </body>
       </html>

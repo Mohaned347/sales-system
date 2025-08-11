@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiRefreshCw, FiCornerUpLeft, FiEye, FiArchive } from 'react-icons/fi';
 import SaleModal from './SaleModal';
 import ReturnModal from './ReturnProductModal';
@@ -26,6 +27,8 @@ export default function Sales({
   const [currentSale, setCurrentSale] = useState(null);
   const [selectedSaleItem, setSelectedSaleItem] = useState(null);
   const [showDeletedProducts, setShowDeletedProducts] = useState(false);
+  const [tooltip, setTooltip] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
 
   useEffect(() => {
     if (sales.length === 0 && typeof refreshData === 'function') {
@@ -135,8 +138,52 @@ export default function Sales({
     });
   };
 
+  // Helper to show tooltip at mouse position
+  const handleTooltip = (e, text, id) => {
+    const rect = e.target.getBoundingClientRect();
+    // Tooltip will be shown below the button, centered horizontally
+    const tooltipWidth = Math.min(window.innerWidth * 0.9, 320);
+    let left = rect.right - tooltipWidth / 2 - rect.width / 2;
+    // Clamp left to viewport
+    left = Math.max(8, Math.min(left, window.innerWidth - tooltipWidth - 8));
+    setTooltip({ text, id });
+    setTooltipPos({
+      top: rect.bottom + window.scrollY + 8,
+      left: left + window.scrollX
+    });
+  };
+  const clearTooltip = () => setTooltip(null);
+
+  // Tooltip portal rendering
+  const tooltipNode = tooltip ? ReactDOM.createPortal(
+    <div
+      style={{
+        position: 'absolute',
+        top: tooltipPos.top,
+        left: tooltipPos.left,
+        width: 'clamp(180px, 90vw, 320px)',
+        background: '#fff',
+        color: '#222',
+        borderRadius: '12px',
+        boxShadow: '0 2px 16px 2px #e5e7eb',
+        padding: '12px',
+        zIndex: 9999,
+        wordBreak: 'break-word',
+        fontSize: '0.95rem',
+        pointerEvents: 'none',
+        direction: 'rtl',
+        lineHeight: 1.7,
+        whiteSpace: 'pre-line',
+      }}
+      dir="rtl"
+    >
+      {tooltip.text}
+    </div>,
+    document.body
+  ) : null;
+
   return (
-    <div className="p-4 sm:p-6 w-full" dir="rtl">
+    <div className="p-4 sm:p-6 w-full relative" dir="rtl">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-yellow-700">إدارة المبيعات</h1>
@@ -234,8 +281,10 @@ export default function Sales({
                           {formatDate(sale.date)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex justify-end space-x-2">
+                          <div className="flex justify-end space-x-2 relative">
                             <button
+                              onMouseEnter={e => handleTooltip(e, 'عرض تفاصيل المبيعات لهذه العملية', sale.id)}
+                              onMouseLeave={clearTooltip}
                               onClick={() => handleViewDetails(sale)}
                               className="text-blue-600 hover:text-blue-800 p-2 rounded-full hover:bg-blue-100 transition-colors"
                               title="عرض التفاصيل"
@@ -245,6 +294,8 @@ export default function Sales({
                             
                             {hasReturnableItems(sale) && (
                               <button
+                                onMouseEnter={e => handleTooltip(e, 'إعادة منتج من هذه العملية', sale.id)}
+                                onMouseLeave={clearTooltip}
                                 onClick={() => {
                                   setSelectedSaleItem(sale);
                                   setIsReturnModalOpen(true);
@@ -257,6 +308,8 @@ export default function Sales({
                             )}
                             
                             <button
+                              onMouseEnter={e => handleTooltip(e, 'تعديل بيانات المبيعات لهذه العملية', sale.id)}
+                              onMouseLeave={clearTooltip}
                               onClick={() => {
                                 setCurrentSale(sale);
                                 setIsSaleModalOpen(true);
@@ -268,6 +321,8 @@ export default function Sales({
                             </button>
                             
                             <button
+                              onMouseEnter={e => handleTooltip(e, 'حذف هذه العملية من سجل المبيعات', sale.id)}
+                              onMouseLeave={clearTooltip}
                               onClick={() => handleDeleteSale(sale.id)}
                               className="text-red-600 hover:text-red-800 p-2 rounded-full hover:bg-red-100 transition-colors"
                               title="حذف"
@@ -321,6 +376,8 @@ export default function Sales({
         sale={currentSale}
         getProductById={getProductById}
       />
-    </div>
+    {/* Tooltip rendered outside the table, under the hovered button, using portal */}
+    {tooltipNode}
+  </div>
   );
 }

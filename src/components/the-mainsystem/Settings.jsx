@@ -260,7 +260,16 @@ export default function Settings() {
           <div className="flex justify-end gap-4">
             <button
               type="button"
-              onClick={() => window.location.reload()}
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  // إعادة تحميل الصفحة بدون window.location
+                  if (typeof window !== 'undefined') {
+                    const { useRouter } = require('next/navigation');
+                    const router = useRouter();
+                    router.replace(window.location.pathname);
+                  }
+                }
+              }}
               className="px-6 py-2 border border-gray-300 rounded-lg font-medium transition-colors hover:bg-gray-50"
               disabled={loading}
             >

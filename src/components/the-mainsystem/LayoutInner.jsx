@@ -172,13 +172,17 @@ export default function DashboardLayoutInner({ children }) {
   // إغلاق السايدبار تلقائياً عند اختيار أي رابط في الموبايل
   const handleNavClick = () => setSidebarOpen(false);
 
-  if (trialExpired && pathname !== '/dashboard/customer-service') {
+  if (user && user.role === 'trial_user' && trialExpired && pathname !== '/dashboard/customer-service') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-red-50 flex-col gap-8" dir="rtl">
         <div className="bg-white border border-red-300 rounded-xl shadow-lg p-8 max-w-md text-center">
           <h2 className="text-2xl font-bold text-red-700 mb-4">انتهت الفترة التجريبية</h2>
           <p className="text-red-600 mb-4">لا يمكنك الوصول إلى النظام بعد انتهاء الفترة التجريبية. يرجى ترقية حسابك للاستمرار أو التواصل مع الدعم.</p>
-          <a href="/dashboard/customer-service" className="inline-block bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-bold">الانتقال إلى خدمة العملاء</a>
+          <div className="flex flex-col gap-4 items-center">
+            <Link href="/pricing" legacyBehavior>
+              <a className="inline-block bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white px-6 py-3 rounded-lg font-bold border-2 border-yellow-600 animate-pulse">ترقية الحساب</a>
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -188,7 +192,7 @@ export default function DashboardLayoutInner({ children }) {
     <div className="min-h-screen bg-gray-50 flex" dir="rtl">
       {/* زر فتح السايدبار في الموبايل */}
       <button
-        className="md:hidden fixed top-4 right-4 z-50 bg-primary text-white p-2 rounded-full shadow-lg focus:outline-none"
+        className="md:hidden fixed top-4 right-4 z-[100] bg-primary text-white p-2 rounded-full shadow-lg focus:outline-none"
         onClick={() => setSidebarOpen(true)}
         aria-label="فتح القائمة الجانبية"
       >
@@ -196,16 +200,15 @@ export default function DashboardLayoutInner({ children }) {
       </button>
       {/* Overlay للموبايل */}
       {sidebarOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden animate-fade-in" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 bg-black bg-opacity-40 z-[99] md:hidden animate-fade-in" onClick={() => setSidebarOpen(false)} />
       )}
-      {/* سايدبار ثابت في الديسكتوب و Drawer في الموبايل */}
+      {/* سايدبار ثابت في الديسكتوب و ثابتة فوق المحتوى في الموبايل */}
       <aside
         className={`
-          md:fixed md:top-20 md:right-0 md:bottom-0 md:w-64 md:bg-white md:border-r md:border-gray-200 md:shadow-xl md:flex md:flex-col md:z-50
-          absolute top-0 right-0 w-64 bg-white border-r border-gray-200 shadow-xl flex flex-col z-50
-          transition-transform duration-300
-          ${sidebarOpen ? 'translate-x-0' : 'translate-x-64'}
-          md:static md:translate-x-0 md:flex
+          md:fixed md:top-0 md:right-0 md:bottom-0 md:w-64 md:bg-white md:border-r md:border-gray-200 md:shadow-xl md:flex md:flex-col md:z-50
+          fixed top-0 right-0 h-screen w-64 bg-white border-r border-gray-200 shadow-xl flex flex-col z-[100]
+          ${sidebarOpen ? 'block' : 'hidden'}
+          md:static md:block
         `}
         style={{ minHeight: '100vh' }}
       >
@@ -214,19 +217,19 @@ export default function DashboardLayoutInner({ children }) {
           <button onClick={() => setSidebarOpen(false)} className="text-gray-500 hover:text-red-600 text-2xl"><FiX /></button>
         </div>
         {/* Logo section */}
-        <div className="flex flex-col items-center py-6 px-4 border-b border-gray-200 bg-gradient-to-br from-yellow-50 to-orange-50">
-          <div className="flex items-center justify-center mb-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
-              <FiPackage className="text-white text-xl" />
-            </div>
-            <div className="mr-3">
-              <h1 className="text-xl font-bold text-gray-800">
-                {user?.storeData?.storeName || 'متجرك'}
-              </h1>
-              <p className="text-xs text-gray-500">نظام إدارة المبيعات</p>
-            </div>
-          </div>
-        </div>
+       <div className="flex flex-col items-center py-6 px-4 border-b border-gray-200 bg-gradient-to-br from-yellow-50 to-orange-50">
+  <div className="flex items-center justify-center mb-3">
+    <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden bg-white border border-yellow-200">
+      <img src={require('@/components/landing/photos/image.png').default.src} alt="مبيعاتي Logo" width={48} height={48} className="rounded-md" />
+    </div>
+    <div className="mr-3">
+      <h1 className="text-xl font-bold text-gray-800">
+        {user?.storeData?.storeName || 'متجرك'}
+      </h1>
+      <p className="text-xs text-gray-500">نظام إدارة المبيعات</p>
+    </div>
+  </div>
+</div>
         {/* User info section */}
         <div className="px-4 py-4 border-b border-gray-200 bg-gray-50">
           {user && (
@@ -276,7 +279,7 @@ export default function DashboardLayoutInner({ children }) {
           </nav>
         </div>
       </aside>
-      {/* محتوى الصفحة مع margin-right للسايدبار في الديسكتوب */}
+      {/* محتوى الصفحة بدون تأثر بفتح السايدبار في الموبايل */}
       <div className="flex-1 flex flex-col min-h-screen mr-0 md:mr-64 overflow-x-hidden bg-white">
         {showTutorial && <OnboardingTutorial onFinish={handleFinishTutorial} />}
         {showTutorialButton && (

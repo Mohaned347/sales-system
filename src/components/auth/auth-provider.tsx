@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { onAuthStateChanged, User } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
 import { auth, db, signOut as firebaseSignOut } from '../../lib/firebase'
+import { useRouter } from 'next/navigation';
 
 interface UserData {
   uid: string
@@ -36,6 +37,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<UserData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -120,10 +122,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     await firebaseSignOut(auth);
+    // مسح الكوكيز
+    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; samesite=lax';
+    // مسح التخزين المحلي
+    localStorage.clear();
+    sessionStorage.clear();
     setUser(null);
-    if (typeof window !== 'undefined') {
-      window.location.href = '/login';
-    }
+    // انتظر حتى يتم تحديث user فعلياً قبل التوجيه
+    setTimeout(() => {
+      router.replace('/login');
+    }, 0);
   };
 
   const value = {

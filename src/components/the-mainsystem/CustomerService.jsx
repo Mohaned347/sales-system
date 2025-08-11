@@ -78,7 +78,7 @@ export default function CustomerService() {
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md relative" dir='rtl'>
       {/* زر الواتساب العائم */}
       <a 
-        href="https://wa.me/" 
+        href="https://wa.me/+249998782167" 
         target="_blank" 
         rel="noopener noreferrer"
         className="fixed bottom-20 right-74 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition-colors z-50 flex items-center gap-2"

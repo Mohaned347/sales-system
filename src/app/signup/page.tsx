@@ -1,8 +1,11 @@
+"use client";
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { SignUpForm } from '@/components/auth/signup-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function SignUpPage() {
+  const router = useRouter();
   return (
     <div className="flex flex-col min-h-screen bg-secondary/50">
       <main className="flex-grow flex items-center justify-center p-4">
@@ -15,7 +18,10 @@ export default function SignUpPage() {
             <SignUpForm />
             <div className="mt-4 text-center text-sm">
               هل لديك حساب بالفعل؟{' '}
-              <Link href="/login" className="underline hover:text-primary">
+              <Link
+                href="/login"
+                className="underline hover:text-primary bg-transparent border-0 p-0 m-0 cursor-pointer"
+              >
                 سجل الدخول
               </Link>
             </div>

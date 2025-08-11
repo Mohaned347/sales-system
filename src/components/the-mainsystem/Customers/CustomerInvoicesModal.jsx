@@ -1,13 +1,26 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
-import { FiX, FiFileText, FiDollarSign, FiCalendar, FiChevronLeft, FiChevronRight, FiEye } from 'react-icons/fi';
+import { FiX, FiFileText, FiDollarSign, FiCalendar, FiChevronLeft, FiChevronRight, FiEye, FiTrash2 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { useAppContext } from '../../../context/app-context';
 import InvoiceDetailsModal from './InvoiceDetailsModal';
 
 export default function CustomerInvoicesModal({ customer, onClose }) {
   const { user } = useAppContext();
+  // حذف الفاتورة (عملية البيع) من Firestore مباشرة
+  const handleDeleteInvoice = async (invoice) => {
+    if (!window.confirm('هل أنت متأكد من حذف هذه الفاتورة؟')) return;
+    try {
+      if (!user?.uid || !customer?.id || !invoice?.id) throw new Error('بيانات غير مكتملة');
+      const invoiceRef = doc(db, 'users', user.uid, 'customers', customer.id, 'invoices', invoice.id);
+      await deleteDoc(invoiceRef);
+      setInvoices(prev => prev.filter(inv => inv.id !== invoice.id));
+      toast.success('تم حذف الفاتورة بنجاح');
+    } catch (error) {
+      toast.error('حدث خطأ أثناء حذف الفاتورة');
+    }
+  };
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -18,18 +31,43 @@ export default function CustomerInvoicesModal({ customer, onClose }) {
   useEffect(() => {
     const fetchInvoices = async () => {
       if (!user?.uid || !customer?.id) return;
-      
       try {
         const invoicesCol = collection(db, 'users', user.uid, 'customers', customer.id, 'invoices');
         const querySnapshot = await getDocs(invoicesCol);
-        
-        const invoicesList = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          date: doc.data().date?.toDate()?.toLocaleDateString('ar-EG') || 'غير معروف',
-          customer: customer // إضافة معلومات العميل للفاتورة
-        }));
-        
+        const invoicesList = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          // استخراج رقم الفاتورة والتاريخ بشكل موثوق
+          const invoiceNumber = data.invoiceNumber || doc.id || 'غير معروف';
+          let parsedDate = null;
+          // استخدم date أو createdAt أو updatedAt
+          if (data.date) {
+            if (typeof data.date.toDate === 'function') {
+              parsedDate = data.date.toDate();
+            } else {
+              parsedDate = new Date(data.date);
+            }
+          } else if (data.createdAt) {
+            if (typeof data.createdAt.toDate === 'function') {
+              parsedDate = data.createdAt.toDate();
+            } else {
+              parsedDate = new Date(data.createdAt);
+            }
+          } else if (data.updatedAt) {
+            if (typeof data.updatedAt.toDate === 'function') {
+              parsedDate = data.updatedAt.toDate();
+            } else {
+              parsedDate = new Date(data.updatedAt);
+            }
+          }
+          const date = (parsedDate && !isNaN(parsedDate.getTime())) ? parsedDate.toLocaleDateString('ar-EG') : 'غير معروف';
+          return {
+            id: doc.id,
+            ...data,
+            invoiceNumber,
+            date,
+            customer: customer
+          };
+        });
         setInvoices(invoicesList);
         setLoading(false);
       } catch (error) {
@@ -38,9 +76,8 @@ export default function CustomerInvoicesModal({ customer, onClose }) {
         setLoading(false);
       }
     };
-
     fetchInvoices();
-  }, [user?.uid, customer?.id]);
+  }, [user?.uid, customer && customer.id]);
 
   // حساب الفواتير للصفحة الحالية
   const indexOfLastInvoice = currentPage * invoicesPerPage;
@@ -120,13 +157,20 @@ export default function CustomerInvoicesModal({ customer, onClose }) {
                               {invoice.status === 'paid' ? 'مدفوعة' : 'قيد الانتظار'}
                             </span>
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium flex gap-2">
                             <button
                               onClick={() => handleViewDetails(invoice)}
                               className="text-blue-600 hover:text-blue-800 p-1 rounded-full hover:bg-blue-100 transition-colors"
                               title="عرض التفاصيل"
                             >
                               <FiEye size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteInvoice(invoice)}
+                              className="text-red-600 hover:text-red-800 p-1 rounded-full hover:bg-red-100 transition-colors"
+                              title="حذف عملية البيع"
+                            >
+                              <FiTrash2 size={18} />
                             </button>
                           </td>
                         </tr>

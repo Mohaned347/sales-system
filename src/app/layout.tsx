@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/components/auth/auth-provider';
 import Header from '@/components/landing/header';
+import CookieConsent from '@/components/ui/cookie-consent';
 
 export const metadata: Metadata = {
   title: 'مبيعاتي | منصتك لإدارة المبيعات بسهولة',
@@ -24,6 +25,7 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <AuthProvider>
           <Header />
+          <CookieConsent />
           {children}
           <Toaster />
         </AuthProvider>

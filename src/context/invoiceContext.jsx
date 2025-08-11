@@ -33,6 +33,7 @@ export const InvoiceProvider = ({ children }) => {
     }
   }, [user?.uid, parseFirebaseDate, setLoading]);
 
+  // Firestore functions are already imported at the top
   const addInvoice = async (invoiceData) => {
     try {
       const invoicesCol = getUserCollection('invoices');

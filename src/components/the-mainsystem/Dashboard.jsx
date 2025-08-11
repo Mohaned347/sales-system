@@ -12,6 +12,28 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend,
 
 export default function Dashboard() {
   const { products, sales, user, getSalesAnalytics, getInventoryReport } = useAppContext();
+  const [offlineBlocked, setOfflineBlocked] = useState(false);
+  const [showOfflineModal, setShowOfflineModal] = useState(true);
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
+
+  useEffect(() => {
+    if (user?.role === 'trial_user' && typeof window !== 'undefined') {
+      const checkOnline = () => {
+        if (!navigator.onLine) {
+          setOfflineBlocked(true);
+        } else {
+          setOfflineBlocked(false);
+        }
+      };
+      checkOnline();
+      window.addEventListener('online', checkOnline);
+      window.addEventListener('offline', checkOnline);
+      return () => {
+        window.removeEventListener('online', checkOnline);
+        window.removeEventListener('offline', checkOnline);
+      };
+    }
+  }, [user]);
   const [activeTab, setActiveTab] = useState('daily');
   const [storeData, setStoreData] = useState({});
   
@@ -117,6 +139,39 @@ export default function Dashboard() {
     ],
   };
 
+  if (offlineBlocked && isMobile && showOfflineModal) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+        <div className="bg-white rounded-2xl shadow-2xl p-6 w-[90vw] max-w-sm flex flex-col items-center border border-red-300 relative animate-fadeIn">
+          <button
+            className="absolute top-2 left-2 text-gray-500 hover:text-red-600 text-2xl font-bold"
+            onClick={() => setShowOfflineModal(false)}
+            aria-label="إغلاق التنويه"
+          >×</button>
+          <svg width="56" height="56" fill="none" viewBox="0 0 24 24" stroke="#ef4444" className="mb-4">
+            <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+            <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01"/>
+          </svg>
+          <h2 className="text-xl font-bold text-red-700 mb-2">يجب الاتصال بالإنترنت</h2>
+          <p className="text-gray-600 mb-4 text-sm">لا يمكنك استخدام النظام بدون اتصال بالإنترنت. يرجى إعادة الاتصال للمتابعة.</p>
+        </div>
+      </div>
+    );
+  }
+  if (offlineBlocked && !isMobile) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh]">
+        <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center border border-red-200">
+          <svg width="56" height="56" fill="none" viewBox="0 0 24 24" stroke="#ef4444" className="mb-4">
+            <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+            <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01"/>
+          </svg>
+          <h2 className="text-2xl font-bold text-red-700 mb-2">يجب الاتصال بالإنترنت</h2>
+          <p className="text-gray-600 mb-4">لا يمكنك استخدام النظام بدون اتصال بالإنترنت. يرجى إعادة الاتصال للمتابعة.</p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="p-4 md:p-6" dir='rtl'>
     {/* عنوان الصفحة مع ترحيب بالمستخدم */}

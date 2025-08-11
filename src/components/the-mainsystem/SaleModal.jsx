@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { FiX, FiPlus, FiMinus, FiTrash2, FiSearch, FiPercent, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 import { useAppContext } from '../../context/app-context';
 import { toast } from 'react-toastify';
+import { addLocalSale } from '@/lib/local-db';
 
 
 export default function InvoiceModal({ isOpen, onClose }) {
@@ -257,8 +258,6 @@ export default function InvoiceModal({ isOpen, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    
     if (invoiceData.items.length === 0) {
       toast.error(
         <div>
@@ -272,10 +271,20 @@ export default function InvoiceModal({ isOpen, onClose }) {
       );
       return;
     }
-
     setIsSubmitting(true);
     try {
       await addSale(invoiceData);
+      // إضافة الفاتورة محلياً
+      await addLocalSale({
+        id: invoiceData.invoiceNumber,
+        date: invoiceData.date,
+        total: invoiceData.total,
+        items: invoiceData.items.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.price
+        }))
+      });
       toast.success(
         <div>
           <p className="font-bold">تم حفظ الفاتورة بنجاح!</p>
@@ -299,7 +308,6 @@ export default function InvoiceModal({ isOpen, onClose }) {
           autoClose: 5000
         }
       );
-      console.error('Error submitting invoice:', error);
     } finally {
       setIsSubmitting(false);
     }

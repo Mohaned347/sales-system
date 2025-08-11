@@ -18,7 +18,7 @@ import CustomerInvoicesModal from './Customers/CustomerInvoicesModal';
 import { useAppContext } from '../../context/app-context';
 
 export default function Customers() {
-  const { user, customers, addCustomer, loading } = useAppContext();
+  const { user, customers, addCustomer, loading, sales = [] } = useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
@@ -28,6 +28,72 @@ export default function Customers() {
   const [activeTab, setActiveTab] = useState('all');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
+
+  // حالة العرض التوضيحي للعملاء التجريبيين
+  const [showTour, setShowTour] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
+  const [dontShowTour, setDontShowTour] = useState(false);
+
+  // تعريف خطوات الجولة الإرشادية
+  const tourSteps = [
+    {
+      selector: '.add-customer-btn',
+      text: 'زر إضافة عميل جديد. يمكنك من هنا إضافة بيانات عميل جديد للنظام.'
+    },
+    {
+      selector: '.view-cards-btn',
+      text: 'زر عرض العملاء كبطاقات. عند الضغط عليه يتم عرض العملاء بشكل بطاقات تحتوي على معلومات مختصرة لكل عميل مع أزرار لإضافة فاتورة أو تعديل أو حذف.'
+    },
+    {
+      selector: '.view-list-btn',
+      text: 'زر عرض العملاء كجدول. عند الضغط عليه يتم عرض العملاء في جدول مفصل يسهل تصفحه والبحث فيه، مع أزرار لكل عميل للإجراءات المختلفة.'
+    },
+    {
+      selector: '.search-customer-input',
+      text: 'حقل البحث عن العملاء بالاسم أو الهاتف أو البريد. يمكنك كتابة أي جزء من اسم أو رقم أو بريد العميل للعثور عليه بسرعة.'
+    },
+    {
+      selector: '.stats-cards',
+      text: 'بطاقات إحصائيات العملاء: إجمالي العملاء، إجمالي المشتريات، العملاء الدائمين، العملاء غير النشطين. كل بطاقة تعرض رقم وإحصائية مهمة عن قاعدة العملاء.'
+    },
+    {
+      selector: '.bg-gray-100.text-gray-700',
+      text: 'زر عرض فواتير العميل: عند الضغط عليه يظهر لك جميع الفواتير الخاصة بهذا العميل.'
+    },
+    {
+      selector: '.bg-blue-600.text-white',
+      text: 'زر إضافة فاتورة جديدة: يمكنك من هنا إنشاء فاتورة جديدة لهذا العميل.'
+    },
+   
+  ];
+
+  // إظهار الجولة لأي مستخدم دوره trial_user إذا لم يختر "عدم العرض مرة أخرى"
+  useEffect(() => {
+    const dontShow = localStorage.getItem('dontShowTour');
+    setDontShowTour(!!dontShow);
+    if (user?.role === 'trial_user' && !dontShow) {
+      setShowTour(true);
+      setTourStep(0);
+    } else {
+      setShowTour(false);
+    }
+  }, [user]);
+
+  const nextTourStep = () => {
+    if (tourStep < tourSteps.length - 1) {
+      setTourStep(tourStep + 1);
+    } else {
+      setShowTour(false);
+    }
+  };
+  const endTour = () => {
+    setShowTour(false);
+  };
+  const handleDontShowTour = () => {
+    localStorage.setItem('dontShowTour', '1');
+    setDontShowTour(true);
+    setShowTour(false);
+  };
 
   // تحسين الأداء باستخدام useMemo للفلترة والترتيب
   const filteredAndSortedCustomers = useMemo(() => {
@@ -138,9 +204,37 @@ export default function Customers() {
     }).format(amount || 0);
   };
 
-  const formatDate = (date) => {
-    if (!date) return 'لا يوجد';
-    return new Date(date).toLocaleDateString('ar-EG');
+
+  // دالة لحساب آخر تاريخ شراء للعميل من بيانات الفواتير إذا لم توجد lastPurchase
+  const getLastPurchaseDate = (customer) => {
+    // تحقق من وجود تاريخ صالح
+    let date = customer.lastPurchase;
+    let parsedDate = null;
+    // دالة مساعدة لتحويل أي نوع تاريخ
+    function parseDate(val) {
+      if (!val) return null;
+      if (typeof val.toDate === 'function') return val.toDate();
+      if (typeof val === 'number') return new Date(val * (val > 1e12 ? 1 : 1000));
+      if (typeof val === 'string') return new Date(val);
+      if (val instanceof Date) return val;
+      if (typeof val === 'object' && val.seconds) return new Date(val.seconds * 1000);
+      return null;
+    }
+    parsedDate = parseDate(date);
+    if (!parsedDate || isNaN(parsedDate.getTime())) {
+      // ابحث عن كل الفواتير الخاصة بالعميل
+      const customerSales = sales.filter(sale => sale.customerId === customer.id && sale.date);
+      if (customerSales.length === 0) return 'لا يوجد';
+      // احصل على أحدث تاريخ
+      let latestDate = new Date(0);
+      customerSales.forEach(sale => {
+        const saleDate = parseDate(sale.date);
+        if (saleDate && saleDate > latestDate) latestDate = saleDate;
+      });
+      if (latestDate.getTime() === 0) return 'لا يوجد';
+      return latestDate.toLocaleDateString('ar-EG');
+    }
+    return parsedDate.toLocaleDateString('ar-EG');
   };
 
   if (loading) {
@@ -163,7 +257,7 @@ export default function Customers() {
         <div className="flex items-center gap-3">
           <button 
             onClick={() => { setSelectedCustomer(null); setIsCustomerModalOpen(true) }}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg shadow-sm hover:shadow-md transition-all hover:from-blue-700 hover:to-blue-600"
+            className="add-customer-btn flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg shadow-sm hover:shadow-md transition-all hover:from-blue-700 hover:to-blue-600"
           >
             <FiPlus className="text-lg" />
             <span>إضافة عميل</span>
@@ -172,14 +266,14 @@ export default function Customers() {
           <div className="flex bg-gray-200 rounded-lg overflow-hidden shadow-inner">
             <button 
               onClick={() => setView('cards')} 
-              className={`flex items-center gap-1 px-3 py-1.5 ${view === 'cards' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-300'} text-sm transition-colors`}
+              className={`view-cards-btn flex items-center gap-1 px-3 py-1.5 ${view === 'cards' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-300'} text-sm transition-colors`}
             >
               <FiGrid size={16} />
               <span>بطاقات</span>
             </button>
             <button 
               onClick={() => setView('list')} 
-              className={`flex items-center gap-1 px-3 py-1.5 ${view === 'list' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-300'} text-sm transition-colors`}
+              className={`view-list-btn flex items-center gap-1 px-3 py-1.5 ${view === 'list' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-300'} text-sm transition-colors`}
             >
               <FiList size={16} />
               <span>قائمة</span>
@@ -189,7 +283,7 @@ export default function Customers() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="stats-cards grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
@@ -249,7 +343,7 @@ export default function Customers() {
             <input
               type="text"
               placeholder="ابحث عن عميل بالاسم أو الهاتف أو البريد..."
-              className="w-full pr-9 pl-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 text-sm"
+              className="search-customer-input w-full pr-9 pl-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -339,7 +433,7 @@ export default function Customers() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">آخر شراء:</span>
-                  <span className="font-medium">{formatDate(customer.lastPurchase)}</span>
+                  <span className="font-medium">{getLastPurchaseDate(customer)}</span>
                 </div>
               </div>
               
@@ -353,6 +447,7 @@ export default function Customers() {
                 <button
                   onClick={() => handleViewInvoices(customer)}
                   className="bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm hover:bg-gray-200 transition-colors"
+                  title="عرض فواتير العميل"
                 >
                   <FiFileText size={14} />
                 </button>
@@ -393,7 +488,7 @@ export default function Customers() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{customer.phone}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatCurrency(customer.totalSpent)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{customer.purchaseCount || 0}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(customer.lastPurchase)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{getLastPurchaseDate(customer)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex gap-2">
                         <button
@@ -471,9 +566,127 @@ export default function Customers() {
       {isInvoicesModalOpen && selectedCustomer && (
         <CustomerInvoicesModal
           customer={selectedCustomer}
+          invoices={sales.filter(sale => sale.customerId === selectedCustomer.id).map(sale => ({
+            ...sale,
+            invoiceNumber: sale.invoiceNumber || sale.id || 'غير متوفر',
+            date: sale.date ? new Date(sale.date).toLocaleDateString('ar-EG') : 'غير متوفر'
+          }))}
           onClose={() => setIsInvoicesModalOpen(false)}
         />
       )}
+
+      {/* جولة إرشادية للمستخدمين trial_user */}
+      {showTour && tourSteps[tourStep] && !dontShowTour && (
+        // إذا كان الزر من أزرار الإجراءات، أظهر الشرح فقط في وضع الجدول
+        (([
+          '.bg-gray-100.text-gray-700',
+          '.bg-blue-600.text-white',
+          '.text-blue-600',
+          '.text-red-600'
+        ].includes(tourSteps[tourStep].selector) && view === 'list') ||
+         ![
+          '.bg-gray-100.text-gray-700',
+          '.bg-blue-600.text-white',
+          '.text-blue-600',
+          '.text-red-600'
+        ].includes(tourSteps[tourStep].selector)) ? (
+          <TourGuideBox
+            selector={tourSteps[tourStep].selector}
+            text={tourSteps[tourStep].text}
+            onNext={nextTourStep}
+            onEnd={endTour}
+            onDontShow={handleDontShowTour}
+          />
+        ) : null
+      )}
     </div>
+  );
+}
+
+// مكون جولة إرشادية متحرك مع العنصر المحدد
+import { useRef } from 'react';
+function TourGuideBox({ selector, text, onNext, onEnd, onDontShow }) {
+  const [rect, setRect] = useState(null);
+  const boxRef = useRef();
+  useEffect(() => {
+    function updateRect() {
+      const el = document.querySelector(selector);
+      if (el) {
+        const r = el.getBoundingClientRect();
+        setRect(r);
+      }
+    }
+    updateRect();
+    window.addEventListener('scroll', updateRect, true);
+    window.addEventListener('resize', updateRect);
+    return () => {
+      window.removeEventListener('scroll', updateRect, true);
+      window.removeEventListener('resize', updateRect);
+    };
+  }, [selector]);
+  if (!rect) return null;
+  // حساب مكان الصندوق بجوار العنصر (يمين أو يسار حسب المساحة)
+  const spaceRight = window.innerWidth - rect.right;
+  const spaceLeft = rect.left;
+  const boxWidth = 350;
+  let boxStyle = {
+    position: 'fixed',
+    top: Math.max(rect.top + rect.height + 12, 40),
+    left: spaceRight > boxWidth ? rect.right + 16 : Math.max(rect.left - boxWidth - 16, 16),
+    width: boxWidth,
+    background: '#fff',
+    borderRadius: 12,
+    boxShadow: '0 2px 16px rgba(0,0,0,0.15)',
+    padding: '24px',
+    zIndex: 10000,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    transition: 'top 0.2s, left 0.2s',
+  };
+  // إذا لم توجد مساحة كافية فوق العنصر، ضع الصندوق أسفل العنصر
+  if (rect.bottom + 180 > window.innerHeight) {
+    boxStyle.top = Math.max(rect.top - 180, 16);
+  }
+  return (
+    <>
+      {/* هايلايت حول العنصر */}
+      <div style={{
+        position: 'fixed',
+        top: rect.top - 8,
+        left: rect.left - 8,
+        width: rect.width + 16,
+        height: rect.height + 16,
+        border: '3px solid #f59e42',
+        borderRadius: 12,
+        boxShadow: '0 0 24px 4px #f59e42',
+        pointerEvents: 'none',
+        zIndex: 10001
+      }}></div>
+      {/* صندوق الشرح بجوار العنصر */}
+      <div
+        ref={boxRef}
+        style={{
+          ...boxStyle,
+          maxWidth: '95vw',
+          minWidth: '220px',
+          wordBreak: 'break-word',
+          boxSizing: 'border-box',
+          padding: '16px',
+          background: '#fff',
+          borderRadius: '16px',
+          boxShadow: '0 2px 16px 2px #e5e7eb',
+          zIndex: 9999,
+        }}
+      >
+        <div style={{fontWeight: 'bold', fontSize: '1rem', marginBottom: 8, whiteSpace: 'pre-line'}}>شرح:</div>
+        <div style={{marginBottom: 16, fontSize: '0.95rem', whiteSpace: 'pre-line', wordBreak: 'break-word'}}>{text}</div>
+        <div style={{display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap'}}>
+          <button onClick={onNext} style={{background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', fontWeight: 'bold', fontSize: '0.95rem'}}>التالي</button>
+          <button onClick={onEnd} style={{background: '#e5e7eb', color: '#222', border: 'none', borderRadius: 6, padding: '8px 16px', fontSize: '0.95rem'}}>إنهاء</button>
+        </div>
+        <button onClick={onDontShow} style={{background: '#fff7ed', color: '#f59e42', border: '1px solid #f59e42', borderRadius: 6, padding: '8px 16px', fontWeight: 'bold', width: '100%', fontSize: '0.95rem'}}>عدم العرض مرة أخرى</button>
+      </div>
+    </>
   );
 }

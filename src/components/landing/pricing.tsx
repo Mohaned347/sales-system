@@ -213,22 +213,34 @@ function PaymentModal({ open, onClose, plan }: PaymentModalProps) {
           <div className="bg-green-50 rounded-lg p-4 mb-6">
             <h3 className="font-bold text-lg text-green-800 mb-3">حسابات البنوك المتاحة</h3>
             <div className="space-y-3">
-              {banks.filter(bank => bank.active).length > 0 ? (
-                banks.filter(bank => bank.active).map(bank => (
-                  <div key={bank.id} className="border border-green-200 rounded-lg p-3 bg-white">
-                    <div className="font-semibold text-green-800">{bank.name}</div>
-                    <div className="text-sm text-gray-600">رقم الحساب: <span dir="ltr" className="font-mono">{bank.accountNumber}</span></div>
-                    <div className="text-sm text-gray-600">اسم الحساب: {bank.accountName}</div>
-                    {bank.instructions && (
-                      <div className="text-sm text-gray-600 mt-2">تعليمات: {bank.instructions}</div>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-4 text-gray-600">
-                  لا توجد حسابات بنوك متاحة حالياً. يرجى التواصل مع الإدارة.
+          {banks.filter(bank => bank.active).length > 0 ? (
+            banks.filter(bank => bank.active).map(bank => (
+              <div key={bank.id} className="border border-green-200 rounded-lg p-3 bg-white flex items-center gap-4">
+                <div className="w-14 h-14 flex-shrink-0 bg-gray-50 rounded-lg border border-green-100 flex items-center justify-center overflow-hidden">
+                  <img
+                    src={bank.logo || `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56'><rect width='56' height='56' fill='%23f0f0f0'/><text x='50%' y='50%' fill='%23000' font-family='Arial' font-size='12' text-anchor='middle' dominant-baseline='middle'>${encodeURIComponent(bank.name || 'Bank')}</text></svg>`}
+                    alt={bank.name}
+                    className="w-full h-full object-contain"
+                    onError={e => {
+                      e.currentTarget.src = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56'><rect width='56' height='56' fill='%23f0f0f0'/><text x='50%' y='50%' fill='%23000' font-family='Arial' font-size='12' text-anchor='middle' dominant-baseline='middle'>${encodeURIComponent(bank.name || 'Bank')}</text></svg>`;
+                    }}
+                  />
                 </div>
-              )}
+                <div className="flex-1">
+                  <div className="font-semibold text-green-800">{bank.name}</div>
+                  <div className="text-sm text-gray-600">رقم الحساب: <span dir="ltr" className="font-mono">{bank.accountNumber}</span></div>
+                  <div className="text-sm text-gray-600">اسم الحساب: {bank.accountName}</div>
+                  {bank.instructions && (
+                    <div className="text-sm text-gray-600 mt-2">تعليمات: {bank.instructions}</div>
+                  )}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-4 text-gray-600">
+              لا توجد حسابات بنوك متاحة حالياً. يرجى التواصل مع الإدارة.
+            </div>
+          )}
             </div>
           </div>
 
